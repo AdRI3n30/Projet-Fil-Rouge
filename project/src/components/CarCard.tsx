@@ -1,0 +1,56 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Calendar, DollarSign } from 'lucide-react';
+
+interface CarCardProps {
+  car: {
+    id: number;
+    brand: string;
+    model: string;
+    year: number;
+    color: string;
+    price: number;
+    imageUrl: string;
+    available: boolean;
+  };
+}
+
+const CarCard: React.FC<CarCardProps> = ({ car }) => {
+  return (
+    <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:shadow-xl hover:-translate-y-1">
+      <img 
+        src={car.imageUrl} 
+        alt={`${car.brand} ${car.model}`} 
+        className="w-full h-48 object-cover"
+      />
+      <div className="p-4">
+        <div className="flex justify-between items-start">
+          <h3 className="text-xl font-bold text-gray-800">{car.brand} {car.model}</h3>
+          <span className={`px-2 py-1 text-xs font-semibold rounded-full ${car.available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+            {car.available ? 'Disponible' : 'Indisponible'}
+          </span>
+        </div>
+        <div className="mt-2 flex items-center text-gray-600">
+          <Calendar className="h-4 w-4 mr-1" />
+          <span>{car.year}</span>
+          <span className="mx-2">•</span>
+          <span>Couleur: {car.color}</span>
+        </div>
+        <div className="mt-4 flex justify-between items-center">
+          <div className="flex items-center text-blue-600 font-bold">
+            <DollarSign className="h-5 w-5" />
+            <span>{car.price}€ / jour</span>
+          </div>
+          <Link 
+            to={`/cars/${car.id}`}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            Détails
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default CarCard;
