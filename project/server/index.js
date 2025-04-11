@@ -76,7 +76,7 @@ app.post('/api/register', async (req, res) => {
 });
 
 // Route pour récupérer tous les utilisateurs
-app.get('/api/users', authenticateToken, async (req, res) => {
+app.get('/api/users',  async (req, res) => {
   try {
     // Vérifie que l'utilisateur est un admin
   
@@ -174,13 +174,12 @@ app.post('/api/login', async (req, res) => {
       return res.status(400).json({ message: 'Email ou mot de passe incorrect' });
     }
     
-    const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: user.id, email: user.email, role: user.role, name: user.name }, process.env.JWT_SECRET, {
       expiresIn: '1d'
     });
 
     // 🔹 Afficher le token dans la console
     console.log(`✅ Nouveau token généré : ${token}`);
-
     res.status(200).json({
       message: 'Connexion réussie',
       token,
@@ -229,11 +228,9 @@ app.get('/api/cars/:id', async (req, res) => {
   }
 });
 
-app.post('/api/cars', authenticateToken, async (req, res) => {
+app.post('/api/cars', async (req, res) => {
   try {
-    if (req.user.role !== 'ADMIN') {
-      return res.status(403).json({ message: 'Accès non autorisé' });
-    }
+
     
     const { brand, model, year, color, price, description, imageUrl } = req.body;
     
@@ -256,11 +253,8 @@ app.post('/api/cars', authenticateToken, async (req, res) => {
 });
 
 
-app.put('/api/cars/:id', authenticateToken, async (req, res) => {
+app.put('/api/cars/:id',  async (req, res) => {
   try {
-    if (req.user.role !== 'ADMIN') {
-      return res.status(403).json({ message: 'Accès non autorisé' });
-    }
 
     const { id } = req.params;
     const { brand, model, year, color, price, description, imageUrl, available } = req.body;
@@ -298,9 +292,6 @@ app.put('/api/cars/:id', authenticateToken, async (req, res) => {
 
 app.delete('/api/cars/:id', authenticateToken, async (req, res) => {
   try {
-    if (req.user.role !== 'ADMIN') {
-      return res.status(403).json({ message: 'Accès non autorisé' });
-    }
 
     const { id } = req.params;
 
@@ -360,45 +351,91 @@ app.post('/api/rentals', authenticateToken, async (req, res) => {
   }
 });
 
-app.get('/api/rentals', authenticateToken, async (req, res) => {
+app.get('/api/rentals', async (req, res) => {
   try {
-    let rentals;
-    
-    if (req.user.role === 'ADMIN') {
-      rentals = await prisma.rental.findMany({
-        include: {
-          car: true,
-          user: {
-            select: {
-              id: true,
-              name: true,
-              email: true
-            }
+    const rentals = await prisma.rental.findMany({
+      include: {
+        car: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true
           }
-        },
-        orderBy: {
-          createdAt: 'desc'
         }
-      });
-    } else {
-      rentals = await prisma.rental.findMany({
-        where: {
-          userId: req.user.id
-        },
-        include: {
-          car: true
-        },
-        orderBy: {
-          createdAt: 'desc'
-        }
-      });
-    }
-    
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+
     res.json(rentals);
   } catch (error) {
     res.status(500).json({ message: 'Erreur lors de la récupération des locations', error: error.message });
   }
 });
+
+
+
+app.get('/api/rentals/:id',  async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const rental = await prisma.rental.findUnique({
+      where: { id: Number(id) },
+      include: {
+        car: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      }
+    });
+
+    if (!rental) {
+      return res.status(404).json({ message: 'Location non trouvée' });
+    }
+
+    res.status(200).json(rental);
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur lors de la récupération de la location', error: error.message });
+  }
+});
+
+
+
+app.delete('/api/rentals/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const rental = await prisma.rental.findUnique({
+      where: { id: Number(id) }
+    });
+
+    if (!rental) {
+      return res.status(404).json({ message: 'Location non trouvée' });
+    }
+
+
+
+    await prisma.rental.delete({
+      where: { id: Number(id) }
+    });
+
+    await prisma.car.update({
+      where: { id: rental.carId },
+      data: { available: true }
+    });
+
+    res.status(200).json({ message: 'Location supprimée avec succès' });
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur lors de la suppression de la location', error: error.message });
+  }
+});
+
 
 // Démarrage du serveur
 const PORT = process.env.PORT || 5000;

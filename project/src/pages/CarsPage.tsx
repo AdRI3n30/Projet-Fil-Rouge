@@ -30,6 +30,7 @@ const CarsPage: React.FC = () => {
       try {
         setLoading(true);
         const response = await axios.get('http://localhost:5000/api/cars');
+        console.log('Données récupérées :', response.data);
         setCars(response.data);
         setFilteredCars(response.data);
       } catch (err: any) {
@@ -134,7 +135,7 @@ const CarsPage: React.FC = () => {
               type="range"
               id="priceRange"
               min="50"
-              max="500"
+              max="100000"
               step="10"
               className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
               value={priceRange}

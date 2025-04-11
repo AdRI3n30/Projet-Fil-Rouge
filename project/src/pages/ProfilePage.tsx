@@ -20,6 +20,8 @@ interface Rental {
 
 const ProfilePage: React.FC = () => {
   const { user, token } = useAuth();
+  console.log("Utilisateur connecté :", user);
+
   const [rentals, setRentals] = useState<Rental[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);

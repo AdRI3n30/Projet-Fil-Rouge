@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
-import { Plus, Car as CarIcon, Users, Calendar, DollarSign, Loader, AlertCircle, Check, X } from 'lucide-react';
+import { Loader, AlertCircle } from 'lucide-react';
 
 interface Car {
   id: number;
@@ -44,18 +44,6 @@ const AdminDashboard: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [showAddCarForm, setShowAddCarForm] = useState<boolean>(false);
-  const [newCar, setNewCar] = useState({
-    brand: '',
-    model: '',
-    year: new Date().getFullYear(),
-    color: '',
-    price: 0,
-    description: '',
-    imageUrl: ''
-  });
-  const [addCarSuccess, setAddCarSuccess] = useState<boolean>(false);
-  const [addCarError, setAddCarError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -86,6 +74,45 @@ const AdminDashboard: React.FC = () => {
     };
     fetchData();
   }, [activeTab, token]);
+
+  const handleDeleteUser = async (userId: number) => {
+    if (!window.confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) return;
+    try {
+      await axios.delete(`http://localhost:5000/api/users/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
+    } catch (err) {
+      alert("Une erreur est survenue lors de la suppression.");
+      console.error(err);
+    }
+  };
+
+  const handleDeleteCar = async (carId: number) => {
+    if (!window.confirm('Êtes-vous sûr de vouloir supprimer cette voiture ?')) return;
+    try {
+      await axios.delete(`http://localhost:5000/api/cars/${carId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setCars(prevCars => prevCars.filter(car => car.id !== carId));
+    } catch (err) {
+      alert("Erreur lors de la suppression de la voiture.");
+      console.error(err);
+    }
+  };
+
+  const handleDeleteRental = async (rentalId: number) => {
+    if (!window.confirm('Êtes-vous sûr de vouloir supprimer cette location ?')) return;
+    try {
+      await axios.delete(`http://localhost:5000/api/rentals/${rentalId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setRentals(prevRentals => prevRentals.filter(rental => rental.id !== rentalId));
+    } catch (err) {
+      alert("Erreur lors de la suppression de la location.");
+      console.error(err);
+    }
+  };
 
   if (loading) {
     return (
@@ -118,14 +145,77 @@ const AdminDashboard: React.FC = () => {
         )}
 
         <div className="p-6">
-          {activeTab === 'cars' && <div>Affichage des voitures...</div>}
-          {activeTab === 'rentals' && <div>Affichage des locations...</div>}
+          {activeTab === 'cars' && (
+            <div>
+              <h2 className="text-lg font-semibold mb-4">Liste des voitures</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {cars.map(car => (
+                  <div key={car.id} className="bg-gray-100 rounded-lg shadow p-4">
+                    <img src={car.imageUrl} alt={`${car.brand} ${car.model}`} className="w-full h-48 object-cover rounded-md mb-4" />
+                    <h3 className="text-xl font-semibold">{car.brand} {car.model}</h3>
+                    <p className="text-sm text-gray-600">Année : {car.year}</p>
+                    <p className="text-sm text-gray-600">Couleur : {car.color}</p>
+                    <p className="text-sm text-gray-600">Prix : {car.price} €</p>
+                    <p className="text-sm text-gray-600 mb-2">Disponible : {car.available ? 'Oui' : 'Non'}</p>
+                    <p className="text-sm text-gray-800">{car.description}</p>
+                    <button
+                      onClick={() => handleDeleteCar(car.id)}
+                      className="mt-3 bg-red-500 hover:bg-red-600 text-white px-3 py-1 text-sm rounded"
+                    >
+                      Supprimer
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'rentals' && (
+            <div>
+              <h2 className="text-lg font-semibold mb-4">Liste des locations</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {rentals.map(rental => (
+                  <div key={rental.id} className="bg-gray-100 rounded-lg shadow p-4">
+                    <div className="mb-2">
+                      <h3 className="text-xl font-semibold mb-1">
+                        {rental.car.brand} {rental.car.model} ({rental.car.year})
+                      </h3>
+                      <p className="text-sm text-gray-600">Client : {rental.user.name} ({rental.user.email})</p>
+                    </div>
+                    <p className="text-sm text-gray-600">Du : {new Date(rental.startDate).toLocaleDateString()}</p>
+                    <p className="text-sm text-gray-600">Au : {new Date(rental.endDate).toLocaleDateString()}</p>
+                    <p className="text-sm text-gray-600">Prix total : {rental.totalPrice} €</p>
+                    <p className={`text-sm font-medium mt-2 ${rental.status === 'confirmed' ? 'text-green-600' : rental.status === 'pending' ? 'text-yellow-600' : 'text-red-600'}`}>
+                      Statut : {rental.status}
+                    </p>
+                    <button
+                      onClick={() => handleDeleteRental(rental.id)}
+                      className="mt-3 bg-red-500 hover:bg-red-600 text-white px-3 py-1 text-sm rounded"
+                    >
+                      Supprimer
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {activeTab === 'users' && (
             <div>
-              <h2 className="text-lg font-semibold">Liste des utilisateurs</h2>
+              <h2 className="text-lg font-semibold mb-4">Liste des utilisateurs</h2>
               <ul>
                 {users.map(user => (
-                  <li key={user.id} className="border-b py-2">{user.name} - {user.email}</li>
+                  <li key={user.id} className="border-b py-2 flex justify-between items-center">
+                    <div>
+                      {user.name} - {user.email}
+                    </div>
+                    <button
+                      onClick={() => handleDeleteUser(user.id)}
+                      className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 text-sm rounded"
+                    >
+                      Supprimer
+                    </button>
+                  </li>
                 ))}
               </ul>
             </div>
