@@ -1,15 +1,26 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Shield, Clock, MapPin } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import video from '../Public/Vidéo/Hero.mp4'
 
 const HomePage: React.FC = () => {
+  const { isAuthenticated } = useAuth();
+
   return (
     <div className="min-h-screen">
       {/* Hero Section avec animation de fade-in */}
       <section 
-        className="relative bg-cover bg-center h-[600px] animate-fade-in" 
-        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1485291571150-772bcfc10da5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')" }}
+        className="relative h-screen animate-fade-in"
       >
+        <video 
+          className="absolute inset-0 w-full h-full object-cover" 
+          src= {video}
+          autoPlay 
+          loop 
+          muted 
+          playsInline
+        />
         <div className="absolute inset-0 bg-black bg-opacity-60"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex flex-col justify-center">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 animate-slide-up">
@@ -25,12 +36,21 @@ const HomePage: React.FC = () => {
             >
               Voir nos voitures
             </Link>
-            <Link 
-              to="/register" 
-              className="px-6 py-3 bg-white text-blue-600 font-medium rounded-md hover:bg-gray-100 transition-all duration-300 hover:scale-105 hover:shadow-lg"
-            >
-              S'inscrire
-            </Link>
+            {!isAuthenticated ? (
+              <Link 
+                to="/register" 
+                className="px-6 py-3 bg-white text-blue-600 font-medium rounded-md hover:bg-gray-100 transition-all duration-300 hover:scale-105 hover:shadow-lg"
+              >
+                S'inscrire
+              </Link>
+            ) : (
+              <Link 
+                to="/profile" 
+                className="px-6 py-3 bg-white text-blue-600 font-medium rounded-md hover:bg-gray-100 transition-all duration-300 hover:scale-105 hover:shadow-lg"
+              >
+                Mon Profil
+              </Link>
+            )}
           </div>
         </div>
       </section>
@@ -230,12 +250,21 @@ const HomePage: React.FC = () => {
           <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto animate-fade-in delay-100">
             Inscrivez-vous dès maintenant et bénéficiez de 10% de réduction sur votre première location.
           </p>
-          <Link 
-            to="/register" 
-            className="px-6 py-3 bg-white text-blue-600 font-medium rounded-md hover:bg-gray-100 transition-all duration-300 hover:scale-105 hover:shadow-lg inline-block animate-bounce-slow"
-          >
-            S'inscrire maintenant
-          </Link>
+          {!isAuthenticated ? (
+            <Link 
+              to="/register" 
+              className="px-6 py-3 bg-white text-blue-600 font-medium rounded-md hover:bg-gray-100 transition-all duration-300 hover:scale-105 hover:shadow-lg inline-block animate-bounce-slow"
+            >
+              S'inscrire maintenant
+            </Link>
+          ): (
+            <Link 
+              to="/profile" 
+              className="px-6 py-3 bg-white text-blue-600 font-medium rounded-md hover:bg-gray-100 transition-all duration-300 hover:scale-105 hover:shadow-lg inline-block animate-bounce-slow"
+            >
+              Mon Profil
+            </Link>
+          )}
         </div>
       </section>
     </div>

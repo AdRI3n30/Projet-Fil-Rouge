@@ -1,20 +1,53 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Car, User, Menu, X } from 'lucide-react';
+import { Car, Menu, X } from 'lucide-react';
 
 const Navbar: React.FC = () => {
-  const { isAuthenticated, isAdmin, user, logout } = useAuth();
+  const { isAuthenticated, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
 
   const handleLogout = () => {
     logout();
     navigate('/');
   };
 
+  const controlNavbar = () => {
+    setIsVisible(true); // Show navbar on scroll
+    if (timeoutId) clearTimeout(timeoutId); // Clear any existing timeout
+
+    const newTimeoutId = setTimeout(() => {
+      setIsVisible(false); // Hide navbar after 3 seconds of inactivity
+    }, 3000);
+
+    setTimeoutId(newTimeoutId);
+
+    if (window.scrollY > lastScrollY) {
+      setIsVisible(false); // Hide navbar on scroll down
+    } else {
+      setIsVisible(true); // Show navbar on scroll up
+    }
+    setLastScrollY(window.scrollY);
+  };
+
+  useEffect(() => {
+    window.addEventListener('scroll', controlNavbar);
+    return () => {
+      window.removeEventListener('scroll', controlNavbar);
+      if (timeoutId) clearTimeout(timeoutId); // Cleanup timeout on unmount
+    };
+  }, [lastScrollY, timeoutId]);
+
   return (
-    <nav className="bg-blue-600 text-white shadow-lg">
+    <nav
+      className={`bg-blue-600 text-white shadow-lg fixed w-full z-50 transition-transform duration-300 ${
+        isVisible ? 'translate-y-0' : '-translate-y-full'
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
