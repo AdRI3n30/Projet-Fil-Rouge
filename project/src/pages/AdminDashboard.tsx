@@ -34,6 +34,7 @@ interface User {
   id: number;
   name: string;
   email: string;
+  role: 'USER' | 'ADMIN' | 'VENDEUR';
 }
 
 const AdminDashboard: React.FC = () => {
@@ -113,6 +114,20 @@ const AdminDashboard: React.FC = () => {
       console.error(err);
     }
   };
+
+  const handleChangeUserRole = async (userId: number, newRole: 'USER' | 'ADMIN' | 'VENDEUR') => {
+    try {
+      await axios.put(`http://localhost:5000/api/users/${userId}`, 
+        { role: newRole }, 
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u));
+    } catch (err) {
+      alert("Erreur lors de la mise à jour du rôle.");
+      console.error(err);
+    }
+  };
+  
 
   if (loading) {
     return (
@@ -205,16 +220,29 @@ const AdminDashboard: React.FC = () => {
               <h2 className="text-lg font-semibold mb-4">Liste des utilisateurs</h2>
               <ul>
                 {users.map(user => (
-                  <li key={user.id} className="border-b py-2 flex justify-between items-center">
+                  <li key={user.id} className="border-b py-2 flex flex-col md:flex-row md:justify-between md:items-center gap-2">
                     <div>
-                      {user.name} - {user.email}
+                      <div>{user.name} - {user.email}</div>
+                      <div className="text-sm text-gray-600">Rôle actuel : <strong>{user.role}</strong></div>
                     </div>
-                    <button
-                      onClick={() => handleDeleteUser(user.id)}
-                      className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 text-sm rounded"
-                    >
-                      Supprimer
-                    </button>
+
+                    <div className="flex items-center gap-3">
+                    <select
+                        value={user.role}
+                        onChange={(e) => handleChangeUserRole(user.id, e.target.value as 'USER' | 'ADMIN' | 'VENDEUR')}
+                        className="border rounded px-2 py-1 text-sm"
+                      >
+                        <option value="USER">USER</option>
+                        <option value="VENDEUR">VENDEUR</option>
+                        <option value="ADMIN">ADMIN</option>
+                      </select>
+                      <button
+                        onClick={() => handleDeleteUser(user.id)}
+                        className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 text-sm rounded"
+                      >
+                        Supprimer
+                      </button>
+                    </div>
                   </li>
                 ))}
               </ul>

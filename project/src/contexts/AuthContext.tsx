@@ -13,6 +13,7 @@ interface AuthContextType {
   token: string | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  isSeller: boolean;
   login: (name: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
@@ -38,6 +39,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const isAuthenticated = !!user;
   const isAdmin = user?.role === 'ADMIN';
+  const isSeller = user?.role === 'VENDEUR';
+
 
   useEffect(() => {
     if (token) {
@@ -111,6 +114,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     token,
     isAuthenticated,
     isAdmin,
+    isSeller,
     login,
     register,
     logout,

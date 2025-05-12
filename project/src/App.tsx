@@ -12,6 +12,8 @@ import ProfilePage from './pages/ProfilePage';
 import AdminDashboard from './pages/AdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
+import VendeurPage from './pages/VendeurPage';
+import AddCarPage from './pages/AddCar';
 
 function App() {
   return (
@@ -19,13 +21,29 @@ function App() {
       <Router>
         <div className="flex flex-col min-h-screen">
           <Navbar />
-          <main className="flex-grow">
+          <main className="flex-grow pt-8">
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/cars" element={<CarsPage />} />
               <Route path="/cars/:id" element={<CarDetailsPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
+              <Route 
+                path="/vendeur" 
+                element={
+                  <ProtectedRoute>
+                    <VendeurPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route 
+                path="/ajouter-voiture" 
+                element={
+                  <ProtectedRoute>
+                    <AddCarPage />
+                  </ProtectedRoute>
+                }
+              />
               <Route 
                 path="/profile" 
                 element={

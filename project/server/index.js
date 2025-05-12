@@ -75,16 +75,10 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// Route pour récupérer tous les utilisateurs
 app.get('/api/users',  async (req, res) => {
   try {
-    // Vérifie que l'utilisateur est un admin
   
-
-    // Récupère tous les utilisateurs
     const users = await prisma.user.findMany();
-
-    // Retourne la liste des utilisateurs
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ message: 'Erreur lors de la récupération des utilisateurs', error: error.message });

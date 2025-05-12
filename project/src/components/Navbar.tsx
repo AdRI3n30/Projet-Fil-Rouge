@@ -1,53 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Car, Menu, X } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const Navbar: React.FC = () => {
-  const { isAuthenticated, isAdmin, logout } = useAuth();
+  const { isAuthenticated, isAdmin, isSeller, logout } = useAuth();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isVisible, setIsVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
-  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
 
   const handleLogout = () => {
     logout();
     navigate('/');
   };
 
-  const controlNavbar = () => {
-    setIsVisible(true); // Show navbar on scroll
-    if (timeoutId) clearTimeout(timeoutId); // Clear any existing timeout
-
-    const newTimeoutId = setTimeout(() => {
-      setIsVisible(false); // Hide navbar after 3 seconds of inactivity
-    }, 3000);
-
-    setTimeoutId(newTimeoutId);
-
-    if (window.scrollY > lastScrollY) {
-      setIsVisible(false); // Hide navbar on scroll down
-    } else {
-      setIsVisible(true); // Show navbar on scroll up
-    }
-    setLastScrollY(window.scrollY);
-  };
-
-  useEffect(() => {
-    window.addEventListener('scroll', controlNavbar);
-    return () => {
-      window.removeEventListener('scroll', controlNavbar);
-      if (timeoutId) clearTimeout(timeoutId); // Cleanup timeout on unmount
-    };
-  }, [lastScrollY, timeoutId]);
-
   return (
-    <nav
-      className={`bg-blue-600 text-white shadow-lg fixed w-full z-50 transition-transform duration-300 ${
-        isVisible ? 'translate-y-0' : '-translate-y-full'
-      }`}
-    >
+    <nav className="bg-blue-600 text-white shadow-lg fixed w-full z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
@@ -70,6 +38,11 @@ const Navbar: React.FC = () => {
                 {isAdmin && (
                   <Link to="/admin" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
                     Admin
+                  </Link>
+                )}
+                {isSeller && (
+                  <Link to="/vendeur" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
+                    Vendeur
                   </Link>
                 )}
                 <Link to="/profile" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
@@ -107,10 +80,16 @@ const Navbar: React.FC = () => {
         </div>
       </div>
 
-      {/* Mobile menu */}
-      {isMenuOpen && (
-        <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+      {/* Menu Mobile avec animation */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+            className="md:hidden px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-blue-600"
+          >
             <Link
               to="/"
               className="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700"
@@ -134,6 +113,15 @@ const Navbar: React.FC = () => {
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Admin
+                  </Link>
+                )}
+                {isSeller && (
+                  <Link
+                    to="/vendeur"
+                    className="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Vendeur
                   </Link>
                 )}
                 <Link
@@ -171,9 +159,9 @@ const Navbar: React.FC = () => {
                 </Link>
               </>
             )}
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 };
