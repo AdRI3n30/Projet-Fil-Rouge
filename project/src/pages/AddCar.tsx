@@ -12,20 +12,16 @@ const AddCarForm: React.FC = () => {
     brand: '',
     model: '',
     year: '',
-    pricePerDay: ''
+    color: '',
+    price: '',
+    description: '',
+    imageUrl: ''
   });
-  const [imageFile, setImageFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setImageFile(e.target.files[0]);
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,19 +30,21 @@ const AddCarForm: React.FC = () => {
     setError(null);
 
     try {
-      const formDataToSend = new FormData();
-      formDataToSend.append('brand', formData.brand);
-      formDataToSend.append('model', formData.model);
-      formDataToSend.append('year', formData.year);
-      formDataToSend.append('pricePerDay', formData.pricePerDay);
-      if (imageFile) {
-        formDataToSend.append('image', imageFile);
-      }
+      // Préparer les données en convertissant year et price en nombres
+      const payload = {
+        brand: formData.brand,
+        model: formData.model,
+        year: Number(formData.year),
+        color: formData.color,
+        price: Number(formData.price),
+        description: formData.description,
+        imageUrl: formData.imageUrl
+      };
 
-      await axios.post('http://localhost:5000/api/cars', formDataToSend, {
+      await axios.post('http://localhost:5000/api/cars', payload, {
         headers: {
           Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
+          'Content-Type': 'application/json'
         }
       });
 
@@ -91,19 +89,36 @@ const AddCarForm: React.FC = () => {
           className="w-full border px-3 py-2 rounded"
         />
         <input
+          type="text"
+          name="color"
+          placeholder="Couleur"
+          value={formData.color}
+          onChange={handleChange}
+          className="w-full border px-3 py-2 rounded"
+        />
+        <input
           type="number"
-          name="pricePerDay"
-          placeholder="Prix par jour (€)"
-          value={formData.pricePerDay}
+          name="price"
+          placeholder="Prix (€)"
+          value={formData.price}
           onChange={handleChange}
           required
           className="w-full border px-3 py-2 rounded"
         />
+        <textarea
+          name="description"
+          placeholder="Description"
+          value={formData.description}
+          onChange={handleChange}
+          className="w-full border px-3 py-2 rounded"
+          rows={3}
+        />
         <input
-          type="file"
-          accept="image/*"
-          onChange={handleFileChange}
-          required
+          type="text"
+          name="imageUrl"
+          placeholder="URL de l’image"
+          value={formData.imageUrl}
+          onChange={handleChange}
           className="w-full border px-3 py-2 rounded"
         />
         <button

@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Shield, Clock, MapPin } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import video from '../Public/Vidéo/Hero.mp4'
+import video from '/Vidéo/Hero.mp4'
 
 const HomePage: React.FC = () => {
   const { isAuthenticated } = useAuth();

@@ -40,14 +40,17 @@ const VendeurPage: React.FC = () => {
   }, []);
 
   const handleDelete = async (carId: number) => {
-    if (!window.confirm('Êtes-vous sûr de vouloir supprimer cette voiture ?')) return;
+    const confirmation = window.confirm('Êtes-vous sûr de vouloir supprimer cette voiture ?');
+    if (!confirmation) return;
+
     try {
-      await axios.delete(`http://localhost:5000/api/cars/${carId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setCars(prev => prev.filter(car => car.id !== carId));
-    } catch (err) {
-      alert("Erreur lors de la suppression.");
+      await axios.delete(`http://localhost:5000/api/cars/${carId}`);
+
+      // Mise à jour de la liste des voitures après suppression
+      setCars(prevCars => prevCars.filter(car => car.id !== carId));
+    } catch (err: any) {
+      console.error('❌ Erreur lors de la suppression :', err);
+      alert(err.response?.data?.message || "Erreur lors de la suppression de la voiture.");
     }
   };
 
@@ -82,7 +85,7 @@ const VendeurPage: React.FC = () => {
               <p className="text-blue-600 font-bold">{car.pricePerDay}€ / jour</p>
               <div className="mt-auto flex justify-end space-x-2 pt-4">
                 <button
-                  onClick={() => navigate(`/modifier-voiture/${car.id}`)}
+                  onClick={() => navigate(`/edit-car/${car.id}`)}
                   className="text-blue-600 hover:text-blue-800"
                 >
                   <Pencil className="h-5 w-5" />

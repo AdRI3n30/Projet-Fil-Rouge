@@ -14,6 +14,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
 import VendeurPage from './pages/VendeurPage';
 import AddCarPage from './pages/AddCar';
+import EditCarPage from './pages/EditCar';
 
 function App() {
   return (
@@ -28,6 +29,13 @@ function App() {
               <Route path="/cars/:id" element={<CarDetailsPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
+              <Route 
+                path="/edit-car/:id" 
+                element={
+                  <ProtectedRoute>
+                    <EditCarPage />
+                  </ProtectedRoute>
+                } />
               <Route 
                 path="/vendeur" 
                 element={
