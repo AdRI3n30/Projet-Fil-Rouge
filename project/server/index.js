@@ -399,6 +399,54 @@ app.get('/api/rentals/:id',  async (req, res) => {
   }
 });
 
+app.put('/api/rentals/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    // Vérification des statuts valides
+    const allowedStatuses = ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED'];
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({ message: `Statut invalide : ${status}` });
+    }
+
+    // Récupération de la location
+    const rental = await prisma.rental.findUnique({
+      where: { id: Number(id) }
+    });
+
+    if (!rental) {
+      return res.status(404).json({ message: 'Location non trouvée.' });
+    }
+
+    // Mise à jour de la location
+    const updatedRental = await prisma.rental.update({
+      where: { id: Number(id) },
+      data: { status }
+    });
+
+    // Mise à jour de la disponibilité de la voiture
+    if (status === 'CONFIRMED') {
+      await prisma.car.update({
+        where: { id: rental.carId },
+        data: { available: false }
+      });
+    } else if (status === 'CANCELLED') {
+      await prisma.car.update({
+        where: { id: rental.carId },
+        data: { available: true }
+      });
+    }
+
+    res.status(200).json(updatedRental);
+
+  } catch (error) {
+    console.error('Erreur PUT /api/rentals/:id :', error);
+    res.status(500).json({ message: 'Erreur serveur.', error: error.message });
+  }
+});
+
+
 
 
 app.delete('/api/rentals/:id', authenticateToken, async (req, res) => {
