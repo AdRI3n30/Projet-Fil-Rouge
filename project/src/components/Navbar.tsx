@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Car, Menu, X } from 'lucide-react';
+import { Car, Menu, X, ShoppingCart } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 const Navbar: React.FC = () => {
@@ -45,6 +45,11 @@ const Navbar: React.FC = () => {
                     Vendeur
                   </Link>
                 )}
+                <Link to="/mes-reservations" className="relative px-3 py-2 rounded-md hover:bg-blue-700 flex items-center">
+                  <ShoppingCart className="h-6 w-6" />
+                  {/* Optionnel : badge nombre de réservations en attente */}
+                  {/* <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1">2</span> */}
+                </Link>
                 <Link to="/profile" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
                   Mon Profil
                 </Link>
@@ -124,6 +129,13 @@ const Navbar: React.FC = () => {
                     Vendeur
                   </Link>
                 )}
+                <Link
+                  to="/mes-reservations"
+                  className="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Mes Réservations
+                </Link>
                 <Link
                   to="/profile"
                   className="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700"

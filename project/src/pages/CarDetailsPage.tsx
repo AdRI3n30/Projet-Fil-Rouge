@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
-import { Calendar, DollarSign, Clock, Check, X, Loader, Car as CarIcon } from 'lucide-react';
+import { Calendar, DollarSign, Check, X, Loader, Car as CarIcon } from 'lucide-react';
 
 interface Car {
   id: number;
@@ -75,8 +75,8 @@ const CarDetailsPage: React.FC = () => {
     try {
       setIsRenting(true);
       setRentalError(null);
-      
-      await axios.post(
+
+      const response = await axios.post(
         'http://localhost:5000/api/rentals',
         {
           carId: car?.id,
@@ -90,10 +90,10 @@ const CarDetailsPage: React.FC = () => {
           }
         }
       );
-      
-      setRentalSuccess(true);
-      // Update car availability
-      setCar(prev => prev ? { ...prev, available: false } : null);
+
+      // Redirige vers la page de facturation avec les infos de la commande et de la voiture
+      navigate('/facturation', { state: { rental: response.data, car } });
+
     } catch (err: any) {
       setRentalError(err.response?.data?.message || 'Une erreur est survenue lors de la location');
     } finally {

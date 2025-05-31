@@ -10,7 +10,7 @@ const EditCarPage: React.FC = () => {
     brand: '',
     model: '',
     year: '',
-    pricePerDay: '',
+    price: '',
     imageUrl: ''
   });
   const [loading, setLoading] = useState(true);
@@ -20,8 +20,8 @@ const EditCarPage: React.FC = () => {
     const fetchCar = async () => {
       try {
         const res = await axios.get(`http://localhost:5000/api/cars/${id}`);
-        const { brand, model, year, pricePerDay, imageUrl } = res.data;
-        setFormData({ brand, model, year, pricePerDay, imageUrl });
+        const { brand, model, year, price, imageUrl } = res.data;
+        setFormData({ brand, model, year, price, imageUrl });
       } catch (err: any) {
         setError('Erreur lors du chargement de la voiture.');
       } finally {
@@ -39,7 +39,11 @@ const EditCarPage: React.FC = () => {
     e.preventDefault();
     setError(null);
     try {
-      await axios.put(`http://localhost:5000/api/cars/${id}`, formData);
+      await axios.put(`http://localhost:5000/api/cars/${id}`, {
+        ...formData,
+        year: Number(formData.year),
+        price: Number(formData.price)
+      });
       navigate('/vendeur'); // Retour au dashboard
     } catch (err: any) {
       setError('Erreur lors de la mise à jour.');
@@ -82,9 +86,9 @@ const EditCarPage: React.FC = () => {
         />
         <input
           type="number"
-          name="pricePerDay"
+          name="price"
           placeholder="Prix par jour (€)"
-          value={formData.pricePerDay}
+          value={formData.price}
           onChange={handleChange}
           className="w-full border px-3 py-2 rounded"
           required

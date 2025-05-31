@@ -9,7 +9,7 @@ interface CarItem {
   brand: string;
   model: string;
   year: number;
-  pricePerDay: number;
+  price: number;
   imageUrl: string;
 }
 
@@ -175,7 +175,7 @@ const VendeurPage: React.FC = () => {
               )}
               <img src={car.imageUrl} alt={`${car.brand} ${car.model}`} className="h-40 w-full object-cover rounded mb-4" />
               <h2 className="text-lg font-semibold text-gray-800">{car.brand} {car.model} ({car.year})</h2>
-              <p className="text-blue-600 font-bold">{car.pricePerDay}€ / jour</p>
+              <p className="text-blue-600 font-bold">{car.price}€ / jour</p>
               <div className="mt-auto flex justify-end space-x-2 pt-4">
                 <button
                   onClick={() => navigate(`/edit-car/${car.id}`)}

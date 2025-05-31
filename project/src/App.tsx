@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import Navbar from './components/Navbar';
@@ -15,6 +14,8 @@ import AdminRoute from './components/AdminRoute';
 import VendeurPage from './pages/VendeurPage';
 import AddCarPage from './pages/AddCar';
 import EditCarPage from './pages/EditCar';
+import BillingPage from './pages/BillingPage';
+import MesReservations from './pages/MesReservations';
 
 function App() {
   return (
@@ -68,6 +69,8 @@ function App() {
                   </AdminRoute>
                 } 
               />
+              <Route path="/facturation" element={<BillingPage />} />
+              <Route path="/mes-reservations" element={<MesReservations />} />
             </Routes>
           </main>
           <Footer />

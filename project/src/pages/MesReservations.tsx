@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
-import { User, Calendar, Car as CarIcon, Clock, Loader, AlertCircle } from 'lucide-react';
+import { Calendar, Car as CarIcon, Clock, Loader, AlertCircle } from 'lucide-react';
 
 interface Rental {
   id: number;
@@ -18,10 +18,8 @@ interface Rental {
   };
 }
 
-const ProfilePage: React.FC = () => {
+const MesReservations: React.FC = () => {
   const { user, token } = useAuth();
-  console.log("Utilisateur connecté :", user);
-
   const [rentals, setRentals] = useState<Rental[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,19 +29,16 @@ const ProfilePage: React.FC = () => {
       try {
         setLoading(true);
         const response = await axios.get('http://localhost:5000/api/rentals', {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+          headers: { Authorization: `Bearer ${token}` }
         });
-        // Filtrer les locations pour ne garder que celles de l'utilisateur connecté
-        setRentals(response.data.filter((rental: any) => rental.userId === user?.id));
+        // Filtre les locations du client connecté
+        setRentals(response.data.filter((r: any) => r.userId === user?.id));
       } catch (err: any) {
-        setError(err.response?.data?.message || 'Une erreur est survenue lors de la récupération de vos locations');
+        setError(err.response?.data?.message || 'Une erreur est survenue lors de la récupération de vos réservations');
       } finally {
         setLoading(false);
       }
     };
-
     fetchRentals();
   }, [token, user]);
 
@@ -86,11 +81,28 @@ const ProfilePage: React.FC = () => {
     }
   };
 
+  const handleFinishRental = async (rentalId: number) => {
+    try {
+      await axios.put(
+        `http://localhost:5000/api/rentals/${rentalId}`,
+        { status: 'COMPLETED' },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setRentals(prev =>
+        prev.map(r =>
+          r.id === rentalId ? { ...r, status: 'COMPLETED' } : r
+        )
+      );
+    } catch (err) {
+      alert("Erreur lors de la finalisation de la location.");
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <Loader className="h-8 w-8 animate-spin text-blue-600" />
-        <span className="ml-2 text-lg">Chargement de votre profil...</span>
+        <span className="ml-2 text-lg">Chargement de vos réservations...</span>
       </div>
     );
   }
@@ -99,29 +111,11 @@ const ProfilePage: React.FC = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <div className="bg-blue-600 px-6 py-4">
-          <h1 className="text-2xl font-bold text-white">Mon Profil</h1>
+          <h1 className="text-2xl font-bold text-white">Mes Réservations</h1>
         </div>
-        
         <div className="p-6">
-          <div className="flex items-center mb-8">
-            <div className="h-20 w-20 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-              <User className="h-10 w-10" />
-            </div>
-            <div className="ml-6">
-              <h2 className="text-2xl font-bold text-gray-800">{user?.name}</h2>
-              <p className="text-gray-600">{user?.email}</p>
-              <p className="text-sm text-gray-500 mt-1">
-                Membre depuis {new Date(user?.createdAt || Date.now()).toLocaleDateString('fr-FR', {
-                  month: 'long',
-                  year: 'numeric'
-                })}
-              </p>
-            </div>
-          </div>
-          
           <div className="border-t border-gray-200 pt-6">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">Mes Locations</h3>
-            
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">Historique</h3>
             {error && (
               <div className="mb-4 bg-red-50 border-l-4 border-red-400 p-4">
                 <div className="flex items-center">
@@ -130,12 +124,11 @@ const ProfilePage: React.FC = () => {
                 </div>
               </div>
             )}
-            
             {rentals.length === 0 ? (
               <div className="text-center py-8 bg-gray-50 rounded-lg">
                 <CarIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h4 className="text-lg font-medium text-gray-800 mb-2">Aucune location trouvée</h4>
-                <p className="text-gray-600">Vous n'avez pas encore loué de voiture.</p>
+                <h4 className="text-lg font-medium text-gray-800 mb-2">Aucune réservation trouvée</h4>
+                <p className="text-gray-600">Vous n'avez pas encore réservé de voiture.</p>
               </div>
             ) : (
               <div className="space-y-6">
@@ -171,6 +164,19 @@ const ProfilePage: React.FC = () => {
                         </p>
                       </div>
                     </div>
+                    <div className="mt-2 flex gap-2">
+                      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadgeClass(rental.status)}`}>
+                        {getStatusLabel(rental.status)}
+                      </span>
+                      {rental.status === 'CONFIRMED' && (
+                        <button
+                          onClick={() => handleFinishRental(rental.id)}
+                          className="ml-2 px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs"
+                        >
+                          Finir
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -182,4 +188,4 @@ const ProfilePage: React.FC = () => {
   );
 };
 
-export default ProfilePage;
+export default MesReservations;

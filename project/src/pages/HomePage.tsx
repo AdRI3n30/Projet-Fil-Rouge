@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { Search, Shield, Clock, MapPin } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -6,6 +7,20 @@ import video from '/Vidéo/Hero.mp4'
 
 const HomePage: React.FC = () => {
   const { isAuthenticated } = useAuth();
+  const [popularCars, setPopularCars] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchPopularCars = async () => {
+      try {
+        const res = await axios.get('http://localhost:5000/api/cars');
+        const sorted = [...res.data].sort((a, b) => b.timesRented - a.timesRented).slice(0, 3);
+        setPopularCars(sorted);
+      } catch (err) {
+        setPopularCars([]);
+      }
+    };
+    fetchPopularCars();
+  }, []);
 
   return (
     <div className="min-h-screen">
@@ -97,81 +112,44 @@ const HomePage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-center text-gray-800 mb-12 animate-fade-in">Nos voitures populaires</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Car 1 */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden transform hover:scale-105 transition-all duration-300 hover:shadow-xl animate-slide-up">
-              <div className="relative overflow-hidden">
-                <img 
-                  src="https://images.unsplash.com/photo-1550355291-bbee04a92027?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" 
-                  alt="BMW Serie 5" 
-                  className="w-full h-48 object-cover transform hover:scale-110 transition-all duration-500"
-                />
-              </div>
-              <div className="p-4">
-                <h3 className="text-xl font-bold text-gray-800">BMW Serie 5</h3>
-                <p className="text-gray-600 mt-2">Élégance, confort et performances pour vos déplacements professionnels.</p>
-                <div className="mt-4 flex justify-between items-center">
-                  <span className="text-blue-600 font-bold">120€ / jour</span>
-                  <Link 
-                    to="/cars" 
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-all duration-300 hover:scale-105 hover:shadow-lg"
-                  >
-                    Voir plus
-                  </Link>
+            {popularCars.length === 0 ? (
+              <p className="col-span-3 text-center text-gray-500">Aucune voiture populaire pour le moment.</p>
+            ) : (
+              popularCars.map((car, idx) => (
+                <div
+                  key={car.id}
+                  className={`bg-white rounded-lg shadow-md overflow-hidden transform hover:scale-105 transition-all duration-300 hover:shadow-xl animate-slide-up${idx === 1 ? ' delay-100' : idx === 2 ? ' delay-200' : ''}`}
+                >
+                  <div className="relative overflow-hidden">
+                    <img
+                      src={car.imageUrl}
+                      alt={`${car.brand} ${car.model}`}
+                      className="w-full h-48 object-cover transform hover:scale-110 transition-all duration-500"
+                    />
+                    <span className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
+                      {car.timesRented} location{car.timesRented > 1 ? 's' : ''}
+                    </span>
+                  </div>
+                  <div className="p-4">
+                    <h3 className="text-xl font-bold text-gray-800">{car.brand} {car.model}</h3>
+                    <p className="text-gray-600 mt-2">{car.description}</p>
+                    <div className="mt-4 flex justify-between items-center">
+                      <span className="text-blue-600 font-bold">{car.price}€ / jour</span>
+                      <Link
+                        to={`/cars/${car.id}`}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                      >
+                        Voir plus
+                      </Link>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-            
-            {/* Car 2 */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden transform hover:scale-105 transition-all duration-300 hover:shadow-xl animate-slide-up delay-100">
-              <div className="relative overflow-hidden">
-                <img 
-                  src="https://images.unsplash.com/photo-1580273916550-e323be2ae537?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" 
-                  alt="Mercedes Classe C" 
-                  className="w-full h-48 object-cover transform hover:scale-110 transition-all duration-500"
-                />
-              </div>
-              <div className="p-4">
-                <h3 className="text-xl font-bold text-gray-800">Mercedes Classe C</h3>
-                <p className="text-gray-600 mt-2">Le luxe à l'allemande avec un confort de conduite exceptionnel.</p>
-                <div className="mt-4 flex justify-between items-center">
-                  <span className="text-blue-600 font-bold">110€ / jour</span>
-                  <Link 
-                    to="/cars" 
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-all duration-300 hover:scale-105 hover:shadow-lg"
-                  >
-                    Voir plus
-                  </Link>
-                </div>
-              </div>
-            </div>
-            
-            {/* Car 3 */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden transform hover:scale-105 transition-all duration-300 hover:shadow-xl animate-slide-up delay-200">
-              <div className="relative overflow-hidden">
-                <img 
-                  src="https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" 
-                  alt="Audi A4" 
-                  className="w-full h-48 object-cover transform hover:scale-110 transition-all duration-500"
-                />
-              </div>
-              <div className="p-4">
-                <h3 className="text-xl font-bold text-gray-800">Audi A4</h3>
-                <p className="text-gray-600 mt-2">Technologie de pointe et design raffiné pour une expérience premium.</p>
-                <div className="mt-4 flex justify-between items-center">
-                  <span className="text-blue-600 font-bold">100€ / jour</span>
-                  <Link 
-                    to="/cars" 
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-all duration-300 hover:scale-105 hover:shadow-lg"
-                  >
-                    Voir plus
-                  </Link>
-                </div>
-              </div>
-            </div>
+              ))
+            )}
           </div>
           <div className="text-center mt-10">
-            <Link 
-              to="/cars" 
+            <Link
+              to="/cars"
               className="px-6 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-all duration-300 hover:scale-105 hover:shadow-lg inline-block animate-bounce-slow"
             >
               Voir toutes nos voitures
