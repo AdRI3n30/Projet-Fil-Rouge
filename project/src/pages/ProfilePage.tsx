@@ -25,6 +25,12 @@ const ProfilePage: React.FC = () => {
   const [rentals, setRentals] = useState<Rental[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [editMode, setEditMode] = useState(false);
+  const [newName, setNewName] = useState(user?.name || '');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [updateMsg, setUpdateMsg] = useState<string | null>(null);
+  const [profile, setProfile] = useState<any>(user); // user du contexte par défaut
 
   useEffect(() => {
     const fetchRentals = async () => {
@@ -46,6 +52,21 @@ const ProfilePage: React.FC = () => {
 
     fetchRentals();
   }, [token, user]);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await axios.get(`http://localhost:5000/api/users/${user.id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setProfile(res.data);
+        setNewName(res.data.name); // pour pré-remplir le champ nom
+      } catch (err) {
+        // Optionnel : gestion d'erreur
+      }
+    };
+    if (user?.id) fetchProfile();
+  }, [user, token]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -86,6 +107,27 @@ const ProfilePage: React.FC = () => {
     }
   };
 
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setUpdateMsg(null);
+    if (newPassword && newPassword !== confirmPassword) {
+      setUpdateMsg("Les mots de passe ne correspondent pas.");
+      return;
+    }
+    try {
+      await axios.put(
+        `http://localhost:5000/api/users/${user?.id}`,
+        { name: newName, password: newPassword || undefined },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setUpdateMsg('Profil mis à jour !');
+      setEditMode(false);
+      window.location.reload();
+    } catch (err: any) {
+      setUpdateMsg('Erreur lors de la mise à jour');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -108,14 +150,55 @@ const ProfilePage: React.FC = () => {
               <User className="h-10 w-10" />
             </div>
             <div className="ml-6">
-              <h2 className="text-2xl font-bold text-gray-800">{user?.name}</h2>
-              <p className="text-gray-600">{user?.email}</p>
-              <p className="text-sm text-gray-500 mt-1">
-                Membre depuis {new Date(user?.createdAt || Date.now()).toLocaleDateString('fr-FR', {
-                  month: 'long',
-                  year: 'numeric'
-                })}
-              </p>
+              {editMode ? (
+                <form onSubmit={handleUpdateProfile} className="space-y-2">
+                  <input
+                    type="text"
+                    value={newName}
+                    onChange={e => setNewName(e.target.value)}
+                    className="border px-2 py-1 rounded w-full"
+                    placeholder="Nom"
+                    required
+                  />
+                  <input
+                    type="password"
+                    value={newPassword}
+                    onChange={e => setNewPassword(e.target.value)}
+                    className="border px-2 py-1 rounded w-full"
+                    placeholder="Nouveau mot de passe"
+                  />
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={e => setConfirmPassword(e.target.value)}
+                    className="border px-2 py-1 rounded w-full"
+                    placeholder="Confirmer le mot de passe"
+                  />
+                  <div className="flex gap-2 mt-2">
+                    <button type="submit" className="bg-blue-600 text-white px-3 py-1 rounded">Enregistrer</button>
+                    <button type="button" onClick={() => setEditMode(false)} className="bg-gray-300 px-3 py-1 rounded">Annuler</button>
+                  </div>
+                  {updateMsg && <p className="text-sm mt-1">{updateMsg}</p>}
+                </form>
+              ) : (
+                <>
+                  <h2 className="text-2xl font-bold text-gray-800">{profile?.name}</h2>
+                  <p className="text-gray-600">{user?.email}</p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Membre depuis {new Date(user?.createdAt || Date.now()).toLocaleDateString('fr-FR', {
+                      month: 'long',
+                      year: 'numeric'
+                    })}
+                  </p>
+                  <button
+                    onClick={() => setEditMode(true)}
+                    className="mt-2 px-3 py-1 bg-blue-600 text-white rounded text-sm"
+                  >
+                    Modifier mes infos
+                  </button>
+                  {updateMsg && <p className="text-sm mt-1">{updateMsg}</p>}
+                </>
+              )}
             </div>
           </div>
           

@@ -84,16 +84,39 @@ app.get('/api/users',  async (req, res) => {
     res.status(500).json({ message: 'Erreur lors de la récupération des utilisateurs', error: error.message });
   }
 });
+app.get('/api/users/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await prisma.user.findUnique({
+      where: { id: Number(id) },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    });
+    if (!user) {
+      return res.status(404).json({ message: 'Utilisateur non trouvé' });
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur lors de la récupération de l\'utilisateur', error: error.message });
+  }
+});
 
 
 app.put('/api/users/:id', authenticateToken, async (req, res) => {
   try {
-    if (req.user.role !== 'ADMIN') {
+    const { id } = req.params;
+    const { name, password } = req.body;
+
+    // Autoriser si admin OU si l'utilisateur modifie son propre profil
+    if (req.user.role !== 'ADMIN' && req.user.id !== Number(id)) {
       return res.status(403).json({ message: 'Accès non autorisé' });
     }
-
-    const { id } = req.params;
-    const { name, role } = req.body;
 
     // Vérifie si l'utilisateur existe
     const user = await prisma.user.findUnique({
@@ -104,13 +127,18 @@ app.put('/api/users/:id', authenticateToken, async (req, res) => {
       return res.status(404).json({ message: 'Utilisateur non trouvé' });
     }
 
+    // Prépare les données à mettre à jour
+    const data = {};
+    if (name) data.name = name;
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      data.password = hashedPassword;
+    }
+
     // Mise à jour de l'utilisateur
     const updatedUser = await prisma.user.update({
       where: { id: Number(id) },
-      data: {
-        name,
-        role
-      }
+      data
     });
 
     res.status(200).json(updatedUser);
