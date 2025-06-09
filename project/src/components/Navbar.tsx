@@ -3,16 +3,45 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Car, Menu, X, ShoppingCart } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
+import axios from 'axios';
 
 const Navbar: React.FC = () => {
   const { isAuthenticated, isAdmin, isSeller, logout } = useAuth();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [pendingCount, setPendingCount] = useState<number>(0);
 
   const handleLogout = () => {
     logout();
     navigate('/');
   };
+
+  React.useEffect(() => {
+    const fetchPending = async () => {
+      if (isSeller && isAuthenticated) {
+        try {
+          const token = localStorage.getItem('token');
+          const res = await axios.get('http://localhost:5000/api/rentals', {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          const count = res.data.filter((r: any) => r.status === 'PENDING').length;
+          setPendingCount(count);
+        } catch {
+          setPendingCount(0);
+        }
+      }
+    };
+    fetchPending();
+    // Ajout d'un écouteur d'événement pour rafraîchir le compteur sur demande
+    const handler = () => fetchPending();
+    window.addEventListener('refreshPending', handler);
+    // Ajout d'un polling toutes les 5 secondes (au lieu de 15)
+    const interval = setInterval(fetchPending, 5000);
+    return () => {
+      window.removeEventListener('refreshPending', handler);
+      clearInterval(interval);
+    };
+  }, [isSeller, isAuthenticated]);
 
   return (
     <nav className="bg-blue-600 text-white shadow-lg fixed w-full z-50">
@@ -41,14 +70,19 @@ const Navbar: React.FC = () => {
                   </Link>
                 )}
                 {isSeller && (
-                  <Link to="/vendeur" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
-                    Vendeur
-                  </Link>
+                  <div className="relative">
+                    <Link to="/vendeur" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
+                      Vendeur
+                    </Link>
+                    {pendingCount > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full px-2 py-0.5 animate-bounce">
+                        {pendingCount}
+                      </span>
+                    )}
+                  </div>
                 )}
                 <Link to="/mes-reservations" className="relative px-3 py-2 rounded-md hover:bg-blue-700 flex items-center">
                   <ShoppingCart className="h-6 w-6" />
-                  {/* Optionnel : badge nombre de réservations en attente */}
-                  {/* <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1">2</span> */}
                 </Link>
                 <Link to="/profile" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
                   Mon Profil

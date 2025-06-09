@@ -137,8 +137,10 @@ const MesReservations: React.FC = () => {
                     <div className="sm:flex sm:items-center sm:justify-between">
                       <div className="sm:flex sm:items-center">
                         <img 
-                          src={rental.car.imageUrl} 
-                          alt={`${rental.car.brand} ${rental.car.model}`} 
+                          src={rental.car.imageUrl.startsWith('/uploads/')
+                        ? `http://localhost:5000${rental.car.imageUrl}`
+                        : rental.car.imageUrl}
+                      alt={`${rental.car.brand} ${rental.car.model}`}
                           className="h-20 w-20 object-cover rounded-md"
                         />
                         <div className="mt-4 sm:mt-0 sm:ml-4">

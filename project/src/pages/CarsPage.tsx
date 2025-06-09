@@ -21,9 +21,10 @@ const CarsPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [showOnlyAvailable, setShowOnlyAvailable] = useState<boolean>(false);
   const [priceRange, setPriceRange] = useState<number>(500);
   const [selectedBrand, setSelectedBrand] = useState<string>('');
+  const [sortBy, setSortBy] = useState<string>('');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
     const fetchCars = async () => {
@@ -54,11 +55,6 @@ const CarsPage: React.FC = () => {
       );
     }
 
-    // Filter by availability
-    if (showOnlyAvailable) {
-      result = result.filter(car => car.available);
-    }
-
     // Filter by price
     result = result.filter(car => car.price <= priceRange);
 
@@ -67,8 +63,15 @@ const CarsPage: React.FC = () => {
       result = result.filter(car => car.brand === selectedBrand);
     }
 
+    // Tri
+    if (sortBy === 'price') {
+      result = [...result].sort((a, b) => sortOrder === 'asc' ? a.price - b.price : b.price - a.price);
+    } else if (sortBy === 'year') {
+      result = [...result].sort((a, b) => sortOrder === 'asc' ? a.year - b.year : b.year - a.year);
+    }
+
     setFilteredCars(result);
-  }, [searchTerm, showOnlyAvailable, priceRange, selectedBrand, cars]);
+  }, [searchTerm, priceRange, selectedBrand, cars, sortBy, sortOrder]);
 
   // Get unique brands for filter
   const brands = [...new Set(cars.map(car => car.brand))];
@@ -112,17 +115,25 @@ const CarsPage: React.FC = () => {
               <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
             </div>
           </div>
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="available"
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              checked={showOnlyAvailable}
-              onChange={(e) => setShowOnlyAvailable(e.target.checked)}
-            />
-            <label htmlFor="available" className="ml-2 text-gray-700">
-              Afficher uniquement les voitures disponibles
-            </label>
+          {/* Ajout du tri */}
+          <div className="w-full md:w-64">
+            <label htmlFor="sortBy" className="block text-sm font-medium text-gray-700 mb-1">Trier par</label>
+            <select
+              id="sortBy"
+              className="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={sortBy + '-' + sortOrder}
+              onChange={e => {
+                const [field, order] = e.target.value.split('-');
+                setSortBy(field);
+                setSortOrder(order === 'desc' ? 'desc' : 'asc');
+              }}
+            >
+              <option value="">Aucun tri</option>
+              <option value="price-asc">Prix croissant</option>
+              <option value="price-desc">Prix décroissant</option>
+              <option value="year-asc">Année croissante</option>
+              <option value="year-desc">Année décroissante</option>
+            </select>
           </div>
         </div>
         
@@ -135,7 +146,7 @@ const CarsPage: React.FC = () => {
               type="range"
               id="priceRange"
               min="50"
-              max="100000"
+              max="1000"
               step="10"
               className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
               value={priceRange}

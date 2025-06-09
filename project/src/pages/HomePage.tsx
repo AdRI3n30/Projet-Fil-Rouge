@@ -121,10 +121,12 @@ const HomePage: React.FC = () => {
                   className={`bg-white rounded-lg shadow-md overflow-hidden transform hover:scale-105 transition-all duration-300 hover:shadow-xl animate-slide-up${idx === 1 ? ' delay-100' : idx === 2 ? ' delay-200' : ''}`}
                 >
                   <div className="relative overflow-hidden">
-                    <img
-                      src={car.imageUrl}
-                      alt={`${car.brand} ${car.model}`}
-                      className="w-full h-48 object-cover transform hover:scale-110 transition-all duration-500"
+                    <img 
+                      src={car.imageUrl.startsWith('/uploads/')
+                        ? `http://localhost:5000${car.imageUrl}`
+                        : car.imageUrl}
+                      alt={`${car.brand} ${car.model}`} 
+                      className="w-full h-48 object-cover"
                     />
                     <span className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
                       {car.timesRented} location{car.timesRented > 1 ? 's' : ''}

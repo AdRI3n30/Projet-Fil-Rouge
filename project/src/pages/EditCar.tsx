@@ -13,6 +13,7 @@ const EditCarPage: React.FC = () => {
     price: '',
     imageUrl: ''
   });
+  const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,14 +36,28 @@ const EditCarPage: React.FC = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setFile(e.target.files[0]);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     try {
-      await axios.put(`http://localhost:5000/api/cars/${id}`, {
-        ...formData,
-        year: Number(formData.year),
-        price: Number(formData.price)
+      const formDataToSend = new FormData();
+      formDataToSend.append('brand', formData.brand);
+      formDataToSend.append('model', formData.model);
+      formDataToSend.append('year', formData.year);
+      formDataToSend.append('price', formData.price);
+      if (file) {
+        formDataToSend.append('image', file);
+      } else {
+        formDataToSend.append('imageUrl', formData.imageUrl);
+      }
+      await axios.put(`http://localhost:5000/api/cars/${id}`, formDataToSend, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
       navigate('/vendeur'); // Retour au dashboard
     } catch (err: any) {
@@ -56,7 +71,7 @@ const EditCarPage: React.FC = () => {
   return (
     <div className="max-w-xl mx-auto py-10">
       <h2 className="text-2xl font-bold mb-6">Modifier la voiture</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4" encType="multipart/form-data">
         <input
           type="text"
           name="brand"
@@ -93,12 +108,22 @@ const EditCarPage: React.FC = () => {
           className="w-full border px-3 py-2 rounded"
           required
         />
+        {/* Affichage de l'image actuelle */}
+        {formData.imageUrl && (
+          <div className="mb-2">
+            <img
+              src={formData.imageUrl.startsWith('/uploads/') ? `http://localhost:5000${formData.imageUrl}` : formData.imageUrl}
+              alt="Aperçu"
+              className="h-32 object-cover rounded mb-2"
+            />
+            <div className="text-xs text-gray-500">Image actuelle</div>
+          </div>
+        )}
         <input
-          type="text"
-          name="imageUrl"
-          placeholder="URL de l'image"
-          value={formData.imageUrl}
-          onChange={handleChange}
+          type="file"
+          name="image"
+          accept="image/*"
+          onChange={handleFileChange}
           className="w-full border px-3 py-2 rounded"
         />
         <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">

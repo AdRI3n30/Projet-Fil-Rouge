@@ -37,7 +37,11 @@ const VendeurPage: React.FC = () => {
   };
 
   const isCarRented = (carId: number) => {
-    return rentals.some(rental => rental.carId === carId);
+    return rentals.some(
+      rental =>
+        rental.carId === carId &&
+        (rental.status === "PENDING" || rental.status === "CONFIRMED")
+    );
   };
 
   // Valider ou refuser une commande (PUT)
@@ -173,7 +177,7 @@ const VendeurPage: React.FC = () => {
                   En commande
                 </span>
               )}
-              <img src={car.imageUrl} alt={`${car.brand} ${car.model}`} className="h-40 w-full object-cover rounded mb-4" />
+              <img src={car.imageUrl.startsWith('/uploads/')? `http://localhost:5000${car.imageUrl}`: car.imageUrl} alt={`${car.brand} ${car.model}`}  className="h-40 w-full object-cover rounded mb-4" />
               <h2 className="text-lg font-semibold text-gray-800">{car.brand} {car.model} ({car.year})</h2>
               <p className="text-blue-600 font-bold">{car.price}€ / jour</p>
               <div className="mt-auto flex justify-end space-x-2 pt-4">

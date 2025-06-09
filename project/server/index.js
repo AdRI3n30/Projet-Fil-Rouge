@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import pkg from '@prisma/client';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import multer from 'multer';
 
 dotenv.config();
 const { PrismaClient } = pkg;
@@ -13,6 +14,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static('uploads'));
 
 // Middleware d'authentification
 const authenticateToken = (req, res, next) => {
@@ -111,31 +113,19 @@ app.get('/api/users/:id', async (req, res) => {
 app.put('/api/users/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, password } = req.body;
+    const { name, password, role } = req.body;
 
-    // Autoriser si admin OU si l'utilisateur modifie son propre profil
-    if (req.user.role !== 'ADMIN' && req.user.id !== Number(id)) {
-      return res.status(403).json({ message: 'Accès non autorisé' });
-    }
-
-    // Vérifie si l'utilisateur existe
-    const user = await prisma.user.findUnique({
-      where: { id: Number(id) }
-    });
-
-    if (!user) {
-      return res.status(404).json({ message: 'Utilisateur non trouvé' });
-    }
-
-    // Prépare les données à mettre à jour
+    // Seul un admin peut changer le rôle
     const data = {};
     if (name) data.name = name;
     if (password) {
       const hashedPassword = await bcrypt.hash(password, 10);
       data.password = hashedPassword;
     }
+    if (role && req.user.role === 'ADMIN') {
+      data.role = role;
+    }
 
-    // Mise à jour de l'utilisateur
     const updatedUser = await prisma.user.update({
       where: { id: Number(id) },
       data
@@ -143,7 +133,7 @@ app.put('/api/users/:id', authenticateToken, async (req, res) => {
 
     res.status(200).json(updatedUser);
   } catch (error) {
-    res.status(500).json({ message: 'Erreur lors de la mise à jour de l\'utilisateur', error: error.message });
+    res.status(500).json({ message: "Erreur lors de la mise à jour de l'utilisateur", error: error.message });
   }
 });
 
@@ -151,28 +141,19 @@ app.put('/api/users/:id', authenticateToken, async (req, res) => {
 app.delete('/api/users/:id', authenticateToken, async (req, res) => {
   try {
     if (req.user.role !== 'ADMIN') {
-      return res.status(403).json({ message: 'Accès non autorisé' });
+      return res.status(403).json({ message: "Accès refusé" });
     }
-
     const { id } = req.params;
 
-    // Vérifie si l'utilisateur existe
-    const user = await prisma.user.findUnique({
-      where: { id: Number(id) }
-    });
+    // Supprime d'abord les locations liées à l'utilisateur
+    await prisma.rental.deleteMany({ where: { userId: Number(id) } });
 
-    if (!user) {
-      return res.status(404).json({ message: 'Utilisateur non trouvé' });
-    }
+    // Puis supprime l'utilisateur
+    await prisma.user.delete({ where: { id: Number(id) } });
 
-    // Suppression de l'utilisateur
-    await prisma.user.delete({
-      where: { id: Number(id) }
-    });
-
-    res.status(200).json({ message: 'Utilisateur supprimé avec succès' });
+    res.status(204).end();
   } catch (error) {
-    res.status(500).json({ message: 'Erreur lors de la suppression de l\'utilisateur', error: error.message });
+    res.status(500).json({ message: "Erreur lors de la suppression de l'utilisateur", error: error.message });
   }
 });
 
@@ -250,64 +231,58 @@ app.get('/api/cars/:id', async (req, res) => {
   }
 });
 
-app.post('/api/cars', async (req, res) => {
-  try {
+const upload = multer({ dest: 'uploads/' }); // dossier où stocker les images
 
-    
-    const { brand, model, year, color, price, description, imageUrl } = req.body;
-    
+app.post('/api/cars', authenticateToken, upload.single('image'), async (req, res) => {
+  try {
+    const { brand, model, year, color, price, description } = req.body;
+    const imageUrl = req.file ? `/uploads/${req.file.filename}` : '';
+
     const car = await prisma.car.create({
       data: {
         brand,
         model,
-        year,
+        year: Number(year),
         color,
-        price,
+        price: Number(price),
         description,
         imageUrl
       }
     });
-    
+
     res.status(201).json(car);
   } catch (error) {
-    res.status(500).json({ message: 'Erreur lors de la création de la voiture', error: error.message });
+    res.status(500).json({ message: "Erreur lors de l'ajout de la voiture", error: error.message });
   }
 });
 
 
-app.put('/api/cars/:id',  async (req, res) => {
+app.put('/api/cars/:id', authenticateToken, upload.single('image'), async (req, res) => {
   try {
-
     const { id } = req.params;
-    const { brand, model, year, color, price, description, imageUrl, available } = req.body;
+    const { brand, model, year, price } = req.body;
+    let data = {
+      brand,
+      model,
+      year: Number(year),
+      price: Number(price)
+    };
 
-    // Vérifie si la voiture existe
-    const car = await prisma.car.findUnique({
-      where: { id: Number(id) }
-    });
-
-    if (!car) {
-      return res.status(404).json({ message: 'Voiture non trouvée' });
+    // Si une nouvelle image est uploadée, on met à jour imageUrl
+    if (req.file) {
+      data.imageUrl = `/uploads/${req.file.filename}`;
+    } else if (req.body.imageUrl) {
+      data.imageUrl = req.body.imageUrl;
     }
 
-    // Mise à jour de la voiture
     const updatedCar = await prisma.car.update({
       where: { id: Number(id) },
-      data: {
-        brand,
-        model,
-        year,
-        color,
-        price,
-        description,
-        imageUrl,
-        available
-      }
+      data
     });
 
     res.status(200).json(updatedCar);
   } catch (error) {
-    res.status(500).json({ message: 'Erreur lors de la mise à jour de la voiture', error: error.message });
+    res.status(500).json({ message: "Erreur lors de la mise à jour de la voiture", error: error.message });
   }
 });
 
@@ -350,6 +325,23 @@ app.post('/api/rentals', authenticateToken, async (req, res) => {
     
     if (!car || !car.available) {
       return res.status(400).json({ message: 'Voiture non disponible' });
+    }
+
+    // Vérifie les chevauchements de dates
+    const overlapping = await prisma.rental.findFirst({
+      where: {
+        carId: Number(carId),
+        status: { in: ['PENDING', 'CONFIRMED'] },
+        OR: [
+          {
+            startDate: { lte: new Date(endDate) },
+            endDate: { gte: new Date(startDate) }
+          }
+        ]
+      }
+    });
+    if (overlapping) {
+      return res.status(400).json({ message: "Cette voiture est déjà réservée sur cette période." });
     }
     
     const rental = await prisma.rental.create({

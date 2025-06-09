@@ -166,7 +166,10 @@ const AdminDashboard: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {cars.map(car => (
                   <div key={car.id} className="bg-gray-100 rounded-lg shadow p-4">
-                    <img src={car.imageUrl} alt={`${car.brand} ${car.model}`} className="w-full h-48 object-cover rounded-md mb-4" />
+                    <img src={car.imageUrl.startsWith('/uploads/')
+                        ? `http://localhost:5000${car.imageUrl}`
+                        : car.imageUrl}
+                      alt={`${car.brand} ${car.model}`} className="w-full h-48 object-cover rounded-md mb-4" />
                     <h3 className="text-xl font-semibold">{car.brand} {car.model}</h3>
                     <p className="text-sm text-gray-600">Année : {car.year}</p>
                     <p className="text-sm text-gray-600">Couleur : {car.color}</p>

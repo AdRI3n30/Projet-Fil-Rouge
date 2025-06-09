@@ -19,7 +19,9 @@ const CarCard: React.FC<CarCardProps> = ({ car }) => {
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:shadow-xl hover:-translate-y-1">
       <img 
-        src={car.imageUrl} 
+        src={car.imageUrl.startsWith('/uploads/')
+          ? `http://localhost:5000${car.imageUrl}`
+          : car.imageUrl}
         alt={`${car.brand} ${car.model}`} 
         className="w-full h-48 object-cover"
       />

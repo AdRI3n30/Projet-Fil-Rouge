@@ -30,6 +30,7 @@ const CarDetailsPage: React.FC = () => {
   const [isRenting, setIsRenting] = useState<boolean>(false);
   const [rentalSuccess, setRentalSuccess] = useState<boolean>(false);
   const [rentalError, setRentalError] = useState<string | null>(null);
+  const [reservedPeriods, setReservedPeriods] = useState<{startDate: string, endDate: string}[]>([]);
 
   useEffect(() => {
     const fetchCar = async () => {
@@ -60,6 +61,40 @@ const CarDetailsPage: React.FC = () => {
       }
     }
   }, [startDate, endDate, car]);
+
+  // Récupère les périodes réservées pour cette voiture
+  useEffect(() => {
+    const fetchReservedPeriods = async () => {
+      try {
+        const res = await axios.get('http://localhost:5000/api/rentals', {
+          params: { carId: id },
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        // Filtre les locations PENDING ou CONFIRMED
+        const periods = res.data
+          .filter((r: any) => (r.carId === Number(id)) && (r.status === 'PENDING' || r.status === 'CONFIRMED'))
+          .map((r: any) => ({ startDate: r.startDate, endDate: r.endDate }));
+        setReservedPeriods(periods);
+      } catch {}
+    };
+    if (id) fetchReservedPeriods();
+  }, [id, token]);
+
+  // Vérifie si la période choisie chevauche une période réservée
+  const isPeriodUnavailable = () => {
+    if (!startDate || !endDate) return false;
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    // On considère la date de fin comme exclusive pour permettre une nouvelle réservation à partir de ce jour
+    return reservedPeriods.some(period => {
+      const reservedStart = new Date(period.startDate);
+      const reservedEnd = new Date(period.endDate);
+      // La période est indisponible si l'intervalle [start, end) chevauche [reservedStart, reservedEnd)
+      return (
+        start < reservedEnd && end > reservedStart
+      );
+    });
+  };
 
   const handleRent = async () => {
     if (!isAuthenticated) {
@@ -127,7 +162,9 @@ const CarDetailsPage: React.FC = () => {
         <div className="md:flex">
           <div className="md:w-1/2">
             <img 
-              src={car.imageUrl} 
+              src={car.imageUrl.startsWith('/uploads/')
+                ? `http://localhost:5000${car.imageUrl}`
+                : car.imageUrl}
               alt={`${car.brand} ${car.model}`} 
               className="w-full h-96 object-cover"
             />
@@ -135,8 +172,8 @@ const CarDetailsPage: React.FC = () => {
           <div className="md:w-1/2 p-8">
             <div className="flex justify-between items-start">
               <h1 className="text-3xl font-bold text-gray-800">{car.brand} {car.model}</h1>
-              <span className={`px-3 py-1 text-sm font-semibold rounded-full ${car.available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                {car.available ? 'Disponible' : 'Indisponible'}
+              <span className="px-3 py-1 text-sm font-semibold rounded-full bg-green-100 text-green-800">
+                Disponible
               </span>
             </div>
             
@@ -157,92 +194,107 @@ const CarDetailsPage: React.FC = () => {
               <p className="text-gray-600">{car.description}</p>
             </div>
             
-            {car.available && (
-              <div className="mt-8 border-t pt-6">
-                <h3 className="text-xl font-semibold text-gray-800 mb-4">Réserver cette voiture</h3>
-                
-                {rentalSuccess ? (
-                  <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
-                    <div className="flex items-center">
-                      <Check className="h-5 w-5 mr-2" />
-                      <span>Votre réservation a été effectuée avec succès!</span>
+            {/* Affichage de la section réservation toujours, même si car.available est false */}
+            <div className="mt-8 border-t pt-6">
+              <h3 className="text-xl font-semibold text-gray-800 mb-4">Réserver cette voiture</h3>
+              
+              {/* Affichage des périodes réservées */}
+              {reservedPeriods.length > 0 && (
+                <div className="mb-4">
+                  <div className="text-sm font-medium text-gray-700 mb-1">Périodes déjà réservées :</div>
+                  <ul className="text-sm text-gray-600 list-disc ml-5">
+                    {reservedPeriods.map((p, idx) => (
+                      <li key={idx}>
+                        {new Date(p.startDate).toLocaleDateString()} au {new Date(p.endDate).toLocaleDateString()}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              {rentalSuccess ? (
+                <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
+                  <div className="flex items-center">
+                    <Check className="h-5 w-5 mr-2" />
+                    <span>Votre réservation a été effectuée avec succès!</span>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {rentalError && (
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+                      <div className="flex items-center">
+                        <X className="h-5 w-5 mr-2" />
+                        <span>{rentalError}</span>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-1">
+                        Date de début
+                      </label>
+                      <input
+                        type="date"
+                        id="startDate"
+                        className="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        min={new Date().toISOString().split('T')[0]}
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-1">
+                        Date de fin
+                      </label>
+                      <input
+                        type="date"
+                        id="endDate"
+                        className="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        min={startDate || new Date().toISOString().split('T')[0]}
+                      />
                     </div>
                   </div>
-                ) : (
-                  <>
-                    {rentalError && (
-                      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
-                        <div className="flex items-center">
-                          <X className="h-5 w-5 mr-2" />
-                          <span>{rentalError}</span>
-                        </div>
+                  
+                  {totalDays > 0 && (
+                    <div className="bg-gray-50 p-4 rounded-md mb-4">
+                      <div className="flex justify-between mb-2">
+                        <span className="text-gray-600">Durée de location:</span>
+                        <span className="font-medium">{totalDays} jour{totalDays > 1 ? 's' : ''}</span>
                       </div>
-                    )}
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                      <div>
-                        <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-1">
-                          Date de début
-                        </label>
-                        <input
-                          type="date"
-                          id="startDate"
-                          className="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          value={startDate}
-                          onChange={(e) => setStartDate(e.target.value)}
-                          min={new Date().toISOString().split('T')[0]}
-                        />
-                      </div>
-                      <div>
-                        <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-1">
-                          Date de fin
-                        </label>
-                        <input
-                          type="date"
-                          id="endDate"
-                          className="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          value={endDate}
-                          onChange={(e) => setEndDate(e.target.value)}
-                          min={startDate || new Date().toISOString().split('T')[0]}
-                        />
+                      <div className="flex justify-between text-lg font-bold">
+                        <span>Total:</span>
+                        <span>{totalPrice}€</span>
                       </div>
                     </div>
-                    
-                    {totalDays > 0 && (
-                      <div className="bg-gray-50 p-4 rounded-md mb-4">
-                        <div className="flex justify-between mb-2">
-                          <span className="text-gray-600">Durée de location:</span>
-                          <span className="font-medium">{totalDays} jour{totalDays > 1 ? 's' : ''}</span>
-                        </div>
-                        <div className="flex justify-between text-lg font-bold">
-                          <span>Total:</span>
-                          <span>{totalPrice}€</span>
-                        </div>
-                      </div>
+                  )}
+                  
+                  <button
+                    onClick={handleRent}
+                    disabled={isRenting || isPeriodUnavailable()}
+                    className={`w-full py-3 px-4 rounded-md font-medium text-white flex items-center justify-center
+                      ${isRenting || isPeriodUnavailable() ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+                  >
+                    {isRenting ? (
+                      <>
+                        <Loader className="animate-spin h-5 w-5 mr-2" />
+                        Traitement en cours...
+                      </>
+                    ) : (
+                      <>
+                        <CarIcon className="h-5 w-5 mr-2" />
+                        {isPeriodUnavailable()
+                          ? 'Période indisponible'
+                          : isAuthenticated ? 'Réserver maintenant' : 'Connectez-vous pour réserver'}
+                      </>
                     )}
-                    
-                    <button
-                      onClick={handleRent}
-                      disabled={isRenting || !car.available}
-                      className={`w-full py-3 px-4 rounded-md font-medium text-white flex items-center justify-center
-                        ${isRenting || !car.available ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
-                    >
-                      {isRenting ? (
-                        <>
-                          <Loader className="animate-spin h-5 w-5 mr-2" />
-                          Traitement en cours...
-                        </>
-                      ) : (
-                        <>
-                          <CarIcon className="h-5 w-5 mr-2" />
-                          {isAuthenticated ? 'Réserver maintenant' : 'Connectez-vous pour réserver'}
-                        </>
-                      )}
-                    </button>
-                  </>
-                )}
-              </div>
-            )}
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>

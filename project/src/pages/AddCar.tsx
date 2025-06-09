@@ -17,11 +17,18 @@ const AddCarForm: React.FC = () => {
     description: '',
     imageUrl: ''
   });
+  const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setFile(e.target.files[0]);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -30,21 +37,21 @@ const AddCarForm: React.FC = () => {
     setError(null);
 
     try {
-      // Préparer les données en convertissant year et price en nombres
-      const payload = {
-        brand: formData.brand,
-        model: formData.model,
-        year: Number(formData.year),
-        color: formData.color,
-        price: Number(formData.price),
-        description: formData.description,
-        imageUrl: formData.imageUrl
-      };
+      const formDataToSend = new FormData();
+      formDataToSend.append('brand', formData.brand);
+      formDataToSend.append('model', formData.model);
+      formDataToSend.append('year', formData.year);
+      formDataToSend.append('color', formData.color);
+      formDataToSend.append('price', formData.price);
+      formDataToSend.append('description', formData.description);
+      if (file) {
+        formDataToSend.append('image', file);
+      }
 
-      await axios.post('http://localhost:5000/api/cars', payload, {
+      await axios.post('http://localhost:5000/api/cars', formDataToSend, {
         headers: {
           Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'multipart/form-data'
         }
       });
 
@@ -60,7 +67,7 @@ const AddCarForm: React.FC = () => {
     <div className="max-w-xl mx-auto py-10">
       <h2 className="text-2xl font-bold mb-6">Ajouter une voiture</h2>
       {error && <p className="text-red-500 mb-4">{error}</p>}
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4" encType="multipart/form-data">
         <input
           type="text"
           name="brand"
@@ -114,11 +121,10 @@ const AddCarForm: React.FC = () => {
           rows={3}
         />
         <input
-          type="text"
-          name="imageUrl"
-          placeholder="URL de l’image"
-          value={formData.imageUrl}
-          onChange={handleChange}
+          type="file"
+          name="image"
+          accept="image/*"
+          onChange={handleFileChange}
           className="w-full border px-3 py-2 rounded"
         />
         <button
