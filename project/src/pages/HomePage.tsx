@@ -24,9 +24,6 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="min-h-screen">
-      <Helmet>
-        <meta name="description" content="Louez la voiture de vos rêves sur AutoLoc. Découvrez notre sélection de véhicules premium à des prix compétitifs, réservation rapide et service 24/7." />
-      </Helmet>
       {/* Hero Section avec animation de fade-in */}
       <section 
         className="relative h-screen animate-fade-in"
