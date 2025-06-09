@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import { Search, Shield, Clock, MapPin } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import video from '/Vidéo/Hero.mp4'
-import { Helmet } from 'react-helmet';
 
 const HomePage: React.FC = () => {
   const { isAuthenticated } = useAuth();
