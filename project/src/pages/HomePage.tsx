@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Search, Shield, Clock, MapPin } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import video from '/Vidéo/Hero.mp4'
+import { Helmet } from 'react-helmet';
 
 const HomePage: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -24,6 +25,9 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="min-h-screen">
+      <Helmet>
+        <meta name="description" content="Louez la voiture de vos rêves sur AutoLoc. Découvrez notre sélection de véhicules premium à des prix compétitifs, réservation rapide et service 24/7." />
+      </Helmet>
       {/* Hero Section avec animation de fade-in */}
       <section 
         className="relative h-screen animate-fade-in"

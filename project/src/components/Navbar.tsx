@@ -81,8 +81,8 @@ const Navbar: React.FC = () => {
                     )}
                   </div>
                 )}
-                <Link to="/mes-reservations" className="relative px-3 py-2 rounded-md hover:bg-blue-700 flex items-center">
-                  <ShoppingCart className="h-6 w-6" />
+                <Link to="/mes-reservations" className="relative px-3 py-2 rounded-md hover:bg-blue-700 flex items-center" aria-label="Voir mes réservations">
+                  <ShoppingCart className="h-6 w-6" aria-hidden="true" />
                 </Link>
                 <Link to="/profile" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
                   Mon Profil

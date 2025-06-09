@@ -1,0 +1,5 @@
+# robots.txt for AutoLoc
+# Allow all crawlers to access everything
+User-agent: *
+Disallow:
+
