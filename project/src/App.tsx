@@ -16,6 +16,7 @@ import AddCarPage from './pages/AddCar';
 import EditCarPage from './pages/EditCar';
 import BillingPage from './pages/BillingPage';
 import MesReservations from './pages/MesReservations';
+import CompanyMap from './pages/CompanyMap';
 
 function App() {
   return (
@@ -71,6 +72,7 @@ function App() {
               />
               <Route path="/facturation" element={<BillingPage />} />
               <Route path="/mes-reservations" element={<MesReservations />} />
+              <Route path="/implantations" element={<CompanyMap />} />
             </Routes>
           </main>
           <Footer />

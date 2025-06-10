@@ -44,8 +44,8 @@ const VendeurPage: React.FC = () => {
     );
   };
 
-  // Valider ou refuser une commande (PUT)
-  const handleRentalAction = async (rentalId: number, action: 'CONFIRMED' | 'CANCELLED') => {
+  // Valider, refuser ou finir une commande (PUT)
+  const handleRentalAction = async (rentalId: number, action: 'CONFIRMED' | 'CANCELLED' | 'COMPLETED' | 'FINISHED') => {
     try {
       await axios.put(
         `http://localhost:5000/api/rentals/${rentalId}`,
@@ -102,27 +102,70 @@ const VendeurPage: React.FC = () => {
 
   return (
     <div className="max-w-6xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Mes Voitures en Vente</h1>
-        <button
-          onClick={() => navigate('/ajouter-voiture')}
-          className="flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          <PlusCircle className="h-5 w-5 mr-2" />
-          Ajouter une voiture
-        </button>
+      {/* Section Mes Voitures */}
+      <div className="bg-white rounded-xl shadow-lg border border-gray-200 mb-12 p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold text-gray-800">Mes Voitures en Vente</h1>
+          <button
+            onClick={() => navigate('/ajouter-voiture')}
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            <PlusCircle className="h-5 w-5 mr-2" />
+            Ajouter une voiture
+          </button>
+        </div>
+        {loading ? (
+          <p>Chargement...</p>
+        ) : error ? (
+          <p className="text-red-500">{error}</p>
+        ) : cars.length === 0 ? (
+          <div className="text-center py-12 bg-gray-50 rounded-lg">
+            <Car className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-600">Aucune voiture trouvée. Cliquez sur "Ajouter une voiture" pour commencer.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {cars.map((car) => (
+              <div key={car.id} className="bg-white rounded-lg shadow p-4 flex flex-col relative">
+                {isCarRented(car.id) && (
+                  <span className="absolute top-2 right-2 bg-yellow-400 text-white text-xs px-2 py-1 rounded">
+                    En commande
+                  </span>
+                )}
+                <img src={car.imageUrl.startsWith('/uploads/')? `http://localhost:5000${car.imageUrl}`: car.imageUrl} alt={`${car.brand} ${car.model}`}  className="h-40 w-full object-cover rounded mb-4" />
+                <h2 className="text-lg font-semibold text-gray-800">{car.brand} {car.model} ({car.year})</h2>
+                <p className="text-blue-600 font-bold">{car.price}€ / jour</p>
+                <div className="mt-auto flex justify-end space-x-2 pt-4">
+                  <button
+                    onClick={() => navigate(`/edit-car/${car.id}`)}
+                    className="text-blue-600 hover:text-blue-800"
+                  >
+                    <Pencil className="h-5 w-5" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(car.id)}
+                    className="text-red-600 hover:text-red-800"
+                  >
+                    <Trash2 className="h-5 w-5" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      <div className="mb-10">
-        <h2 className="text-xl font-semibold mb-4 text-gray-700">Commandes en cours</h2>
-        {rentals.filter(r => r.status === "PENDING").length === 0 ? (
-          <p className="text-gray-500">Aucune commande en attente.</p>
+      {/* Section Commandes à suivre */}
+      <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+        <h2 className="text-xl font-semibold mb-4 text-gray-700">Commandes à suivre</h2>
+        {rentals.filter(r => r.status !== "CANCELLED" && r.status !== "FINISHED").length === 0 ? (
+          <p className="text-gray-500">Aucune commande à suivre.</p>
         ) : (
           <div className="space-y-4">
             {rentals
-              .filter(r => r.status === "PENDING")
+              .filter(r => r.status !== "CANCELLED" && r.status !== "FINISHED")
               .map(rental => (
-                <div key={rental.id} className="bg-white rounded shadow p-4 flex flex-col sm:flex-row sm:items-center justify-between">
+                <div key={rental.id} className="bg-gray-50 rounded shadow p-4 flex flex-col sm:flex-row sm:items-center justify-between">
                   <div>
                     <div className="font-bold">{rental.car.brand} {rental.car.model} ({rental.car.year})</div>
                     <div className="text-sm text-gray-600">
@@ -132,20 +175,35 @@ const VendeurPage: React.FC = () => {
                       Client : {rental.user.name} ({rental.user.email})
                     </div>
                     <div className="text-sm text-gray-600">Prix total : {rental.totalPrice} €</div>
+                    <div className="text-xs mt-1 px-2 py-1 inline-block rounded bg-blue-100 text-blue-700 font-semibold">
+                      Statut : {rental.status}
+                    </div>
                   </div>
                   <div className="flex space-x-2 mt-4 sm:mt-0">
-                    <button
-                      onClick={() => handleRentalAction(rental.id, 'CONFIRMED')}
-                      className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
-                    >
-                      Accepter
-                    </button>
-                    <button
-                      onClick={() => handleRentalAction(rental.id, 'CANCELLED')}
-                      className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
-                    >
-                      Refuser
-                    </button>
+                    {rental.status === "PENDING" && (
+                      <>
+                        <button
+                          onClick={() => handleRentalAction(rental.id, 'CONFIRMED')}
+                          className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
+                        >
+                          Accepter
+                        </button>
+                        <button
+                          onClick={() => handleRentalAction(rental.id, 'CANCELLED')}
+                          className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+                        >
+                          Refuser
+                        </button>
+                      </>
+                    )}
+                    {rental.status === "CONFIRMED" && (
+                      <button
+                        onClick={() => handleRentalAction(rental.id, 'FINISHED')}
+                        className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+                      >
+                        Finir la location
+                      </button>
+                    )}
                     <button
                       onClick={() => handleDeleteRental(rental.id)}
                       className="px-3 py-1 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
@@ -158,46 +216,6 @@ const VendeurPage: React.FC = () => {
           </div>
         )}
       </div>
-
-      {loading ? (
-        <p>Chargement...</p>
-      ) : error ? (
-        <p className="text-red-500">{error}</p>
-      ) : cars.length === 0 ? (
-        <div className="text-center py-12 bg-gray-50 rounded-lg">
-          <Car className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-600">Aucune voiture trouvée. Cliquez sur "Ajouter une voiture" pour commencer.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {cars.map((car) => (
-            <div key={car.id} className="bg-white rounded-lg shadow p-4 flex flex-col relative">
-              {isCarRented(car.id) && (
-                <span className="absolute top-2 right-2 bg-yellow-400 text-white text-xs px-2 py-1 rounded">
-                  En commande
-                </span>
-              )}
-              <img src={car.imageUrl.startsWith('/uploads/')? `http://localhost:5000${car.imageUrl}`: car.imageUrl} alt={`${car.brand} ${car.model}`}  className="h-40 w-full object-cover rounded mb-4" />
-              <h2 className="text-lg font-semibold text-gray-800">{car.brand} {car.model} ({car.year})</h2>
-              <p className="text-blue-600 font-bold">{car.price}€ / jour</p>
-              <div className="mt-auto flex justify-end space-x-2 pt-4">
-                <button
-                  onClick={() => navigate(`/edit-car/${car.id}`)}
-                  className="text-blue-600 hover:text-blue-800"
-                >
-                  <Pencil className="h-5 w-5" />
-                </button>
-                <button
-                  onClick={() => handleDelete(car.id)}
-                  className="text-red-600 hover:text-red-800"
-                >
-                  <Trash2 className="h-5 w-5" />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 };

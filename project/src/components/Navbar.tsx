@@ -59,6 +59,9 @@ const Navbar: React.FC = () => {
               <Link to="/cars" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
                 Nos Voitures
               </Link>
+              <Link to="/implantations" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
+                Carte
+              </Link>
             </div>
           </div>
           <div className="hidden md:flex md:items-center md:space-x-4">
@@ -142,6 +145,13 @@ const Navbar: React.FC = () => {
               onClick={() => setIsMenuOpen(false)}
             >
               Nos Voitures
+            </Link>
+            <Link
+              to="/implantations"
+              className="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Carte
             </Link>
             {isAuthenticated ? (
               <>

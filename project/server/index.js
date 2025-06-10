@@ -262,7 +262,7 @@ app.post('/api/cars', authenticateToken, upload.single('image'), async (req, res
 app.put('/api/cars/:id', authenticateToken, upload.single('image'), async (req, res) => {
   try {
     const { id } = req.params;
-    const { brand, model, year, price } = req.body;
+    const { brand, model, year, price, description } = req.body;
     let data = {
       brand,
       model,
@@ -279,7 +279,13 @@ app.put('/api/cars/:id', authenticateToken, upload.single('image'), async (req, 
 
     const updatedCar = await prisma.car.update({
       where: { id: Number(id) },
-      data
+      data: {
+        brand,
+        model,
+        year: Number(year),
+        price: Number(price),
+        description, 
+      }
     });
 
     res.status(200).json(updatedCar);
