@@ -11,7 +11,8 @@ const EditCarPage: React.FC = () => {
     model: '',
     year: '',
     price: '',
-    imageUrl: ''
+    imageUrl: '',
+    description: '' // Ajouté ici
   });
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(true);
@@ -21,8 +22,8 @@ const EditCarPage: React.FC = () => {
     const fetchCar = async () => {
       try {
         const res = await axios.get(`http://localhost:5000/api/cars/${id}`);
-        const { brand, model, year, price, imageUrl } = res.data;
-        setFormData({ brand, model, year, price, imageUrl });
+        const { brand, model, year, price, imageUrl, description } = res.data;
+        setFormData({ brand, model, year, price, imageUrl, description: description || '' }); // Ajouté description
       } catch (err: any) {
         setError('Erreur lors du chargement de la voiture.');
       } finally {
@@ -51,6 +52,7 @@ const EditCarPage: React.FC = () => {
       formDataToSend.append('model', formData.model);
       formDataToSend.append('year', formData.year);
       formDataToSend.append('price', formData.price);
+      formDataToSend.append('description', formData.description); // Ajouté ici
       if (file) {
         formDataToSend.append('image', file);
       } else {
@@ -106,6 +108,15 @@ const EditCarPage: React.FC = () => {
           value={formData.price}
           onChange={handleChange}
           className="w-full border px-3 py-2 rounded"
+          required
+        />
+        <textarea
+          name="description"
+          placeholder="Description"
+          value={formData.description}
+          onChange={handleChange}
+          className="w-full border px-3 py-2 rounded"
+          rows={4}
           required
         />
         {/* Affichage de l'image actuelle */}
