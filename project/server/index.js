@@ -5,6 +5,8 @@ import pkg from '@prisma/client';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import multer from 'multer';
+import fs from 'fs';
+import path from 'path';
 
 dotenv.config();
 const { PrismaClient } = pkg;
@@ -467,7 +469,6 @@ app.put('/api/rentals/:id', async (req, res) => {
 });
 
 
-
 app.delete('/api/rentals/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
@@ -497,6 +498,31 @@ app.delete('/api/rentals/:id', authenticateToken, async (req, res) => {
   }
 });
 
+
+// Liste toutes les images du dossier uploads
+app.get('/api/uploads', authenticateToken, (req, res) => {
+  const uploadsDir = path.join(process.cwd(), 'uploads');
+  fs.readdir(uploadsDir, (err, files) => {
+    if (err) {
+      return res.status(500).json({ message: "Erreur lors de la lecture du dossier uploads" });
+    }
+    // On ne retourne que les fichiers (pas les dossiers)
+    const images = files.filter(f => !fs.statSync(path.join(uploadsDir, f)).isDirectory());
+    res.json(images);
+  });
+});
+
+// Supprime une image du dossier uploads
+app.delete('/api/uploads/:filename', authenticateToken, (req, res) => {
+  const { filename } = req.params;
+  const filePath = path.join(process.cwd(), 'uploads', filename);
+  fs.unlink(filePath, (err) => {
+    if (err) {
+      return res.status(404).json({ message: "Fichier non trouvé ou erreur lors de la suppression" });
+    }
+    res.status(204).end();
+  });
+});
 
 // Démarrage du serveur
 const PORT = process.env.PORT || 5000;

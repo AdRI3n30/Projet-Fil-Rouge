@@ -39,10 +39,11 @@ interface User {
 
 const AdminDashboard: React.FC = () => {
   const { token } = useAuth();
-  const [activeTab, setActiveTab] = useState<'cars' | 'rentals' | 'users'>('cars');
+  const [activeTab, setActiveTab] = useState<'cars' | 'rentals' | 'users' | 'images'>('cars');
   const [cars, setCars] = useState<Car[]>([]);
   const [rentals, setRentals] = useState<Rental[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [images, setImages] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -61,11 +62,16 @@ const AdminDashboard: React.FC = () => {
             headers: { Authorization: `Bearer ${token}` }
           });
           setRentals(response.data);
-        } else {
+        } else if (activeTab === 'users') {
           response = await axios.get('http://localhost:5000/api/users', {
             headers: { Authorization: `Bearer ${token}` }
           });
           setUsers(response.data);
+        } else if (activeTab === 'images') {
+          response = await axios.get('http://localhost:5000/api/uploads', {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          setImages(response.data); // response.data doit être un tableau de noms de fichiers
         }
       } catch (err) {
         setError(`Impossible de récupérer les données (${activeTab}).`);
@@ -127,6 +133,19 @@ const AdminDashboard: React.FC = () => {
       console.error(err);
     }
   };
+
+  const handleDeleteImage = async (filename: string) => {
+    if (!window.confirm('Supprimer cette image ?')) return;
+    try {
+      await axios.delete(`http://localhost:5000/api/uploads/${filename}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setImages(prev => prev.filter(img => img !== filename));
+    } catch (err) {
+      alert("Erreur lors de la suppression de l'image.");
+      console.error(err);
+    }
+  };
   
 
   if (loading) {
@@ -150,6 +169,7 @@ const AdminDashboard: React.FC = () => {
             <button onClick={() => setActiveTab('cars')} className={`py-4 px-6 font-medium text-sm border-b-2 focus:outline-none ${activeTab === 'cars' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Gestion des Voitures</button>
             <button onClick={() => setActiveTab('rentals')} className={`py-4 px-6 font-medium text-sm border-b-2 focus:outline-none ${activeTab === 'rentals' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Gestion des Locations</button>
             <button onClick={() => setActiveTab('users')} className={`py-4 px-6 font-medium text-sm border-b-2 focus:outline-none ${activeTab === 'users' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Gestion des Utilisateurs</button>
+            <button onClick={() => setActiveTab('images')} className={`py-4 px-6 font-medium text-sm border-b-2 focus:outline-none ${activeTab === 'images' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Gestion des Images</button>
           </nav>
         </div>
 
@@ -249,6 +269,30 @@ const AdminDashboard: React.FC = () => {
                   </li>
                 ))}
               </ul>
+            </div>
+          )}
+
+          {activeTab === 'images' && (
+            <div>
+              <h2 className="text-lg font-semibold mb-4">Images Uploadées</h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {images.map(filename => (
+                  <div key={filename} className="bg-gray-100 rounded-lg shadow p-2 flex flex-col items-center">
+                    <img
+                      src={`http://localhost:5000/uploads/${filename}`}
+                      alt={filename}
+                      className="w-full h-32 object-cover rounded mb-2"
+                    />
+                    <div className="text-xs break-all mb-1">{filename}</div>
+                    <button
+                      onClick={() => handleDeleteImage(filename)}
+                      className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 text-xs rounded"
+                    >
+                      Supprimer
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
