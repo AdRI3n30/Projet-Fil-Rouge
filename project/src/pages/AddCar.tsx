@@ -48,7 +48,7 @@ const AddCarForm: React.FC = () => {
         formDataToSend.append('image', file);
       }
 
-      await axios.post('http://localhost:5000/api/cars', formDataToSend, {
+      await axios.post('/api/cars', formDataToSend, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'

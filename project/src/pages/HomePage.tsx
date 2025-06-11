@@ -12,7 +12,7 @@ const HomePage: React.FC = () => {
   useEffect(() => {
     const fetchPopularCars = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/cars');
+        const res = await axios.get('/api/cars');
         const sorted = [...res.data].sort((a, b) => b.timesRented - a.timesRented).slice(0, 3);
         setPopularCars(sorted);
       } catch (err) {
@@ -123,7 +123,7 @@ const HomePage: React.FC = () => {
                   <div className="relative overflow-hidden">
                     <img 
                       src={car.imageUrl.startsWith('/uploads/')
-                        ? `http://localhost:5000${car.imageUrl}`
+                        ? `${car.imageUrl}`
                         : car.imageUrl}
                       alt={`${car.brand} ${car.model}`} 
                       className="w-full h-48 object-cover"
