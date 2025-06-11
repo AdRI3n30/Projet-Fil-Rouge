@@ -7,6 +7,11 @@ import bcrypt from 'bcryptjs';
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Pour ES modules : obtenir __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 const { PrismaClient } = pkg;
@@ -17,6 +22,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
+
+// Servir les fichiers statiques du front
+app.use(express.static(path.join(__dirname, '..', 'dist')));
 
 // Middleware d'authentification
 const authenticateToken = (req, res, next) => {
@@ -88,7 +96,7 @@ app.get('/api/users',  async (req, res) => {
     res.status(500).json({ message: 'Erreur lors de la récupération des utilisateurs', error: error.message });
   }
 });
-app.get('/api/users/:id', async (req, res) => {
+app.get('/api/users/:id', authenticateToken,async (req, res) => {
   try {
     const { id } = req.params;
     const user = await prisma.user.findUnique({
@@ -370,7 +378,7 @@ app.post('/api/rentals', authenticateToken, async (req, res) => {
   }
 });
 
-app.get('/api/rentals', async (req, res) => {
+app.get('/api/rentals', authenticateToken,async (req, res) => {
   try {
     const rentals = await prisma.rental.findMany({
       include: {
@@ -521,6 +529,12 @@ app.delete('/api/uploads/:filename', authenticateToken, (req, res) => {
     }
     res.status(204).end();
   });
+});
+
+app.get('*', (req, res) => {
+  if (!req.path.startsWith('/api') && !req.path.startsWith('/uploads')) {
+    res.sendFile(path.join(__dirname, '..', 'dist', 'index.html'));
+  }
 });
 
 // Démarrage du serveur
