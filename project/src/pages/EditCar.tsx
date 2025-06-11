@@ -21,7 +21,7 @@ const EditCarPage: React.FC = () => {
   useEffect(() => {
     const fetchCar = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/cars/${id}`);
+        const res = await axios.get(`/api/cars/${id}`);
         const { brand, model, year, price, imageUrl, description } = res.data;
         setFormData({ brand, model, year, price, imageUrl, description: description || '' }); // Ajouté description
       } catch (err: any) {
@@ -52,16 +52,16 @@ const EditCarPage: React.FC = () => {
       formDataToSend.append('model', formData.model);
       formDataToSend.append('year', formData.year);
       formDataToSend.append('price', formData.price);
-      formDataToSend.append('description', formData.description); // Ajouté ici
+      formDataToSend.append('description', formData.description); 
       if (file) {
         formDataToSend.append('image', file);
       } else {
         formDataToSend.append('imageUrl', formData.imageUrl);
       }
-      await axios.put(`http://localhost:5000/api/cars/${id}`, formDataToSend, {
+      await axios.put(`/api/cars/${id}`, formDataToSend, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      navigate('/vendeur'); // Retour au dashboard
+      navigate('/vendeur');
     } catch (err: any) {
       setError('Erreur lors de la mise à jour.');
     }
@@ -123,7 +123,7 @@ const EditCarPage: React.FC = () => {
         {formData.imageUrl && (
           <div className="mb-2">
             <img
-              src={formData.imageUrl.startsWith('/uploads/') ? `http://localhost:5000${formData.imageUrl}` : formData.imageUrl}
+              src={formData.imageUrl.startsWith('/uploads/') ? `${formData.imageUrl}` : formData.imageUrl}
               alt="Aperçu"
               className="h-32 object-cover rounded mb-2"
             />

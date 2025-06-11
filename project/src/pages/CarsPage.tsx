@@ -30,7 +30,7 @@ const CarsPage: React.FC = () => {
     const fetchCars = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:5000/api/cars');
+        const response = await axios.get('/api/cars');
         console.log('Données récupérées :', response.data);
         setCars(response.data);
         setFilteredCars(response.data);

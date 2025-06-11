@@ -28,7 +28,7 @@ const MesReservations: React.FC = () => {
     const fetchRentals = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:5000/api/rentals', {
+        const response = await axios.get('/api/rentals', {
           headers: { Authorization: `Bearer ${token}` }
         });
         // Filtre les locations du client connecté
@@ -84,7 +84,7 @@ const MesReservations: React.FC = () => {
   const handleFinishRental = async (rentalId: number) => {
     try {
       await axios.put(
-        `http://localhost:5000/api/rentals/${rentalId}`,
+        `/api/rentals/${rentalId}`,
         { status: 'COMPLETED' },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -138,7 +138,7 @@ const MesReservations: React.FC = () => {
                       <div className="sm:flex sm:items-center">
                         <img 
                           src={rental.car.imageUrl.startsWith('/uploads/')
-                        ? `http://localhost:5000${rental.car.imageUrl}`
+                        ? `${rental.car.imageUrl}`
                         : rental.car.imageUrl}
                       alt={`${rental.car.brand} ${rental.car.model}`}
                           className="h-20 w-20 object-cover rounded-md"

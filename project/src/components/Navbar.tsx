@@ -21,7 +21,7 @@ const Navbar: React.FC = () => {
       if (isSeller && isAuthenticated) {
         try {
           const token = localStorage.getItem('token');
-          const res = await axios.get('http://localhost:5000/api/rentals', {
+          const res = await axios.get('/api/rentals', {
             headers: { Authorization: `Bearer ${token}` }
           });
           const count = res.data.filter((r: any) => r.status === 'PENDING').length;

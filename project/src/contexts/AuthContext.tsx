@@ -63,7 +63,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post('http://localhost:5000/api/login', {
+      const response = await axios.post('/api/login', {
         email,
         password
       });
@@ -84,7 +84,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post('http://localhost:5000/api/register', {
+      const response = await axios.post('/api/register', {
         name,
         email,
         password

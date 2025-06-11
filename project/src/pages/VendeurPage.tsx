@@ -25,7 +25,7 @@ const VendeurPage: React.FC = () => {
   const fetchCars = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:5000/api/cars', {
+      const response = await axios.get('/api/cars', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setCars(response.data);
@@ -48,12 +48,12 @@ const VendeurPage: React.FC = () => {
   const handleRentalAction = async (rentalId: number, action: 'CONFIRMED' | 'CANCELLED' | 'COMPLETED' | 'FINISHED') => {
     try {
       await axios.put(
-        `http://localhost:5000/api/rentals/${rentalId}`,
+        `/api/rentals/${rentalId}`,
         { status: action },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       // Recharge la liste des locations pour refléter le changement
-      const res = await axios.get('http://localhost:5000/api/rentals', {
+      const res = await axios.get('/api/rentals', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setRentals(res.data);
@@ -69,7 +69,7 @@ const VendeurPage: React.FC = () => {
     if (!confirmation) return;
 
     try {
-      await axios.delete(`http://localhost:5000/api/rentals/${rentalId}`, {
+      await axios.delete(`/api/rentals/${rentalId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setRentals(prev => prev.filter(r => r.id !== rentalId));
@@ -80,7 +80,7 @@ const VendeurPage: React.FC = () => {
 
   useEffect(() => {
     fetchCars();
-    axios.get('http://localhost:5000/api/rentals', {
+    axios.get('/api/rentals', {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => setRentals(res.data))
@@ -92,7 +92,7 @@ const VendeurPage: React.FC = () => {
     if (!confirmation) return;
 
     try {
-      await axios.delete(`http://localhost:5000/api/cars/${carId}`);
+      await axios.delete(`/api/cars/${carId}`);
       setCars(prevCars => prevCars.filter(car => car.id !== carId));
     } catch (err: any) {
       console.error('❌ Erreur lors de la suppression :', err);
@@ -132,7 +132,7 @@ const VendeurPage: React.FC = () => {
                     En commande
                   </span>
                 )}
-                <img src={car.imageUrl.startsWith('/uploads/')? `http://localhost:5000${car.imageUrl}`: car.imageUrl} alt={`${car.brand} ${car.model}`}  className="h-40 w-full object-cover rounded mb-4" />
+                <img src={car.imageUrl.startsWith('/uploads/')? `${car.imageUrl}`: car.imageUrl} alt={`${car.brand} ${car.model}`}  className="h-40 w-full object-cover rounded mb-4" />
                 <h2 className="text-lg font-semibold text-gray-800">{car.brand} {car.model} ({car.year})</h2>
                 <p className="text-blue-600 font-bold">{car.price}€ / jour</p>
                 <div className="mt-auto flex justify-end space-x-2 pt-4">

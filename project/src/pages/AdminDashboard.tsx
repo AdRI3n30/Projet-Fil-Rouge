@@ -55,20 +55,20 @@ const AdminDashboard: React.FC = () => {
 
         let response;
         if (activeTab === 'cars') {
-          response = await axios.get('http://localhost:5000/api/cars');
+          response = await axios.get('/api/cars');
           setCars(response.data);
         } else if (activeTab === 'rentals') {
-          response = await axios.get('http://localhost:5000/api/rentals', {
+          response = await axios.get('/api/rentals', {
             headers: { Authorization: `Bearer ${token}` }
           });
           setRentals(response.data);
         } else if (activeTab === 'users') {
-          response = await axios.get('http://localhost:5000/api/users', {
+          response = await axios.get('/api/users', {
             headers: { Authorization: `Bearer ${token}` }
           });
           setUsers(response.data);
         } else if (activeTab === 'images') {
-          response = await axios.get('http://localhost:5000/api/uploads', {
+          response = await axios.get('/api/uploads', {
             headers: { Authorization: `Bearer ${token}` }
           });
           setImages(response.data); // response.data doit être un tableau de noms de fichiers
@@ -85,7 +85,7 @@ const AdminDashboard: React.FC = () => {
   const handleDeleteUser = async (userId: number) => {
     if (!window.confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) return;
     try {
-      await axios.delete(`http://localhost:5000/api/users/${userId}`, {
+      await axios.delete(`/api/users/${userId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
@@ -98,7 +98,7 @@ const AdminDashboard: React.FC = () => {
   const handleDeleteCar = async (carId: number) => {
     if (!window.confirm('Êtes-vous sûr de vouloir supprimer cette voiture ?')) return;
     try {
-      await axios.delete(`http://localhost:5000/api/cars/${carId}`, {
+      await axios.delete(`/api/cars/${carId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setCars(prevCars => prevCars.filter(car => car.id !== carId));
@@ -111,7 +111,7 @@ const AdminDashboard: React.FC = () => {
   const handleDeleteRental = async (rentalId: number) => {
     if (!window.confirm('Êtes-vous sûr de vouloir supprimer cette location ?')) return;
     try {
-      await axios.delete(`http://localhost:5000/api/rentals/${rentalId}`, {
+      await axios.delete(`/api/rentals/${rentalId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setRentals(prevRentals => prevRentals.filter(rental => rental.id !== rentalId));
@@ -123,7 +123,7 @@ const AdminDashboard: React.FC = () => {
 
   const handleChangeUserRole = async (userId: number, newRole: 'USER' | 'ADMIN' | 'VENDEUR') => {
     try {
-      await axios.put(`http://localhost:5000/api/users/${userId}`, 
+      await axios.put(`/api/users/${userId}`, 
         { role: newRole }, 
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -137,7 +137,7 @@ const AdminDashboard: React.FC = () => {
   const handleDeleteImage = async (filename: string) => {
     if (!window.confirm('Supprimer cette image ?')) return;
     try {
-      await axios.delete(`http://localhost:5000/api/uploads/${filename}`, {
+      await axios.delete(`/api/uploads/${filename}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setImages(prev => prev.filter(img => img !== filename));
@@ -187,7 +187,7 @@ const AdminDashboard: React.FC = () => {
                 {cars.map(car => (
                   <div key={car.id} className="bg-gray-100 rounded-lg shadow p-4">
                     <img src={car.imageUrl.startsWith('/uploads/')
-                        ? `http://localhost:5000${car.imageUrl}`
+                        ? `${car.imageUrl}`
                         : car.imageUrl}
                       alt={`${car.brand} ${car.model}`} className="w-full h-48 object-cover rounded-md mb-4" />
                     <h3 className="text-xl font-semibold">{car.brand} {car.model}</h3>
@@ -279,7 +279,7 @@ const AdminDashboard: React.FC = () => {
                 {images.map(filename => (
                   <div key={filename} className="bg-gray-100 rounded-lg shadow p-2 flex flex-col items-center">
                     <img
-                      src={`http://localhost:5000/uploads/${filename}`}
+                      src={`/uploads/${filename}`}
                       alt={filename}
                       className="w-full h-32 object-cover rounded mb-2"
                     />

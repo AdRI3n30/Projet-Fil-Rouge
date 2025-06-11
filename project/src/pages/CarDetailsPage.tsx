@@ -36,7 +36,7 @@ const CarDetailsPage: React.FC = () => {
     const fetchCar = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`http://localhost:5000/api/cars/${id}`);
+        const response = await axios.get(`/api/cars/${id}`);
         setCar(response.data);
       } catch (err: any) {
         setError(err.response?.data?.message || 'Une erreur est survenue lors de la récupération des détails de la voiture');
@@ -66,11 +66,10 @@ const CarDetailsPage: React.FC = () => {
   useEffect(() => {
     const fetchReservedPeriods = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/rentals', {
+        const res = await axios.get('/api/rentals', {
           params: { carId: id },
           headers: { Authorization: `Bearer ${token}` }
         });
-        // Filtre les locations PENDING ou CONFIRMED
         const periods = res.data
           .filter((r: any) => (r.carId === Number(id)) && (r.status === 'PENDING' || r.status === 'CONFIRMED'))
           .map((r: any) => ({ startDate: r.startDate, endDate: r.endDate }));
@@ -80,16 +79,13 @@ const CarDetailsPage: React.FC = () => {
     if (id) fetchReservedPeriods();
   }, [id, token]);
 
-  // Vérifie si la période choisie chevauche une période réservée
   const isPeriodUnavailable = () => {
     if (!startDate || !endDate) return false;
     const start = new Date(startDate);
     const end = new Date(endDate);
-    // On considère la date de fin comme exclusive pour permettre une nouvelle réservation à partir de ce jour
     return reservedPeriods.some(period => {
       const reservedStart = new Date(period.startDate);
       const reservedEnd = new Date(period.endDate);
-      // La période est indisponible si l'intervalle [start, end) chevauche [reservedStart, reservedEnd)
       return (
         start < reservedEnd && end > reservedStart
       );
@@ -112,7 +108,7 @@ const CarDetailsPage: React.FC = () => {
       setRentalError(null);
 
       const response = await axios.post(
-        'http://localhost:5000/api/rentals',
+        '/api/rentals',
         {
           carId: car?.id,
           startDate,
@@ -163,7 +159,7 @@ const CarDetailsPage: React.FC = () => {
           <div className="md:w-1/2">
             <img 
               src={car.imageUrl.startsWith('/uploads/')
-                ? `http://localhost:5000${car.imageUrl}`
+                ? `${car.imageUrl}`
                 : car.imageUrl}
               alt={`${car.brand} ${car.model}`} 
               className="w-full h-96 object-cover"

@@ -36,7 +36,7 @@ const ProfilePage: React.FC = () => {
     const fetchRentals = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:5000/api/rentals', {
+        const response = await axios.get('/api/rentals', {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -56,7 +56,7 @@ const ProfilePage: React.FC = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/users/${user.id}`, {
+        const res = await axios.get(`/api/users/${user.id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setProfile(res.data);
@@ -116,7 +116,7 @@ const ProfilePage: React.FC = () => {
     }
     try {
       await axios.put(
-        `http://localhost:5000/api/users/${user?.id}`,
+        `/api/users/${user?.id}`,
         { name: newName, password: newPassword || undefined },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -228,7 +228,7 @@ const ProfilePage: React.FC = () => {
                       <div className="sm:flex sm:items-center">
                         <img 
                           src={rental.car.imageUrl.startsWith('/uploads/')
-                        ? `http://localhost:5000${rental.car.imageUrl}`
+                        ? `${rental.car.imageUrl}`
                         : rental.car.imageUrl}
                       alt={`${rental.car.brand} ${rental.car.model}`}
                           className="h-20 w-20 object-cover rounded-md"
