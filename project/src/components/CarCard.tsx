@@ -28,9 +28,6 @@ const CarCard: React.FC<CarCardProps> = ({ car }) => {
       <div className="p-4">
         <div className="flex justify-between items-start">
           <h3 className="text-xl font-bold text-gray-800">{car.brand} {car.model}</h3>
-          <span className={`px-2 py-1 text-xs font-semibold rounded-full ${car.available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-            {car.available ? 'Disponible' : 'Indisponible'}
-          </span>
         </div>
         <div className="mt-2 flex items-center text-gray-600">
           <Calendar className="h-4 w-4 mr-1" />

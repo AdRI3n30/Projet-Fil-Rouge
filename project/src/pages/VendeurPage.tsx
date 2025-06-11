@@ -158,12 +158,12 @@ const VendeurPage: React.FC = () => {
       {/* Section Commandes à suivre */}
       <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
         <h2 className="text-xl font-semibold mb-4 text-gray-700">Commandes à suivre</h2>
-        {rentals.filter(r => r.status !== "CANCELLED" && r.status !== "FINISHED").length === 0 ? (
+        {rentals.filter(r => r.status !== "CANCELLED" && r.status !== "COMPLETED").length === 0 ? (
           <p className="text-gray-500">Aucune commande à suivre.</p>
         ) : (
           <div className="space-y-4">
             {rentals
-              .filter(r => r.status !== "CANCELLED" && r.status !== "FINISHED")
+              .filter(r => r.status !== "CANCELLED" && r.status !== "COMPLETED")
               .map(rental => (
                 <div key={rental.id} className="bg-gray-50 rounded shadow p-4 flex flex-col sm:flex-row sm:items-center justify-between">
                   <div>
@@ -198,7 +198,7 @@ const VendeurPage: React.FC = () => {
                     )}
                     {rental.status === "CONFIRMED" && (
                       <button
-                        onClick={() => handleRentalAction(rental.id, 'FINISHED')}
+                        onClick={() => handleRentalAction(rental.id, 'COMPLETED')}
                         className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
                       >
                         Finir la location
