@@ -12,18 +12,22 @@ const EditCarPage: React.FC = () => {
     year: '',
     price: '',
     imageUrl: '',
-    description: '' // Ajouté ici
+    description: '' 
   });
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Ajout pour images déjà uploadées
+  const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [selectedExistingImage, setSelectedExistingImage] = useState<string>('');
 
   useEffect(() => {
     const fetchCar = async () => {
       try {
         const res = await axios.get(`/api/cars/${id}`);
         const { brand, model, year, price, imageUrl, description } = res.data;
-        setFormData({ brand, model, year, price, imageUrl, description: description || '' }); // Ajouté description
+        setFormData({ brand, model, year, price, imageUrl, description: description || '' });
       } catch (err: any) {
         setError('Erreur lors du chargement de la voiture.');
       } finally {
@@ -33,13 +37,34 @@ const EditCarPage: React.FC = () => {
     fetchCar();
   }, [id]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Récupérer les images déjà uploadées
+  useEffect(() => {
+    const fetchImages = async () => {
+      try {
+        const res = await axios.get('/api/uploads', {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+        setExistingImages(res.data.map((img: string) => `/uploads/${img}`));
+      } catch (err) {
+        // Optionnel : gérer l'erreur
+      }
+    };
+    fetchImages();
+  }, []);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleExistingImageSelect = (imgUrl: string) => {
+    setSelectedExistingImage(imgUrl);
+    setFile(null); // Désélectionner le fichier uploadé si on choisit une image existante
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0]);
+      setSelectedExistingImage(''); // Désélectionner l'image existante si on choisit un fichier
     }
   };
 
@@ -55,6 +80,8 @@ const EditCarPage: React.FC = () => {
       formDataToSend.append('description', formData.description); 
       if (file) {
         formDataToSend.append('image', file);
+      } else if (selectedExistingImage) {
+        formDataToSend.append('imageUrl', selectedExistingImage);
       } else {
         formDataToSend.append('imageUrl', formData.imageUrl);
       }
@@ -130,6 +157,21 @@ const EditCarPage: React.FC = () => {
             <div className="text-xs text-gray-500">Image actuelle</div>
           </div>
         )}
+        {/* Sélection d'une image déjà uploadée */}
+        <div>
+          <label className="block mb-1 font-semibold">Choisir une image existante :</label>
+          <div className="flex flex-wrap gap-2 mb-2">
+            {existingImages.map((img) => (
+              <img
+                key={img}
+                src={img}
+                alt="existante"
+                className={`h-16 w-24 object-cover rounded cursor-pointer border-2 ${selectedExistingImage === img ? 'border-blue-500' : 'border-transparent'}`}
+                onClick={() => handleExistingImageSelect(img)}
+              />
+            ))}
+          </div>
+        </div>
         <input
           type="file"
           name="image"
