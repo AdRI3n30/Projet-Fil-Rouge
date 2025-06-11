@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -17,11 +17,22 @@ import EditCarPage from './pages/EditCar';
 import BillingPage from './pages/BillingPage';
 import MesReservations from './pages/MesReservations';
 import CompanyMap from './pages/CompanyMap';
+import React from 'react';
+
+// Ajoute ce composant utilitaire
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  React.useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
 
 function App() {
   return (
     <AuthProvider>
       <Router>
+        <ScrollToTop /> {/* Ajoute ceci ici */}
         <div className="flex flex-col min-h-screen">
           <Navbar />
           <main className="flex-grow pt-8">
