@@ -233,7 +233,7 @@ app.get('/api/cars/:id', async (req, res) => {
   }
 });
 
-const upload = multer({ dest: 'uploads/' }); // dossier où stocker les images
+const upload = multer({ dest: 'uploads/' }); 
 
 app.post('/api/cars', authenticateToken, upload.single('image'), async (req, res) => {
   try {
@@ -269,8 +269,6 @@ app.put('/api/cars/:id', authenticateToken, upload.single('image'), async (req, 
       year: Number(year),
       price: Number(price)
     };
-
-    // Si une nouvelle image est uploadée, on met à jour imageUrl
     if (req.file) {
       data.imageUrl = `/uploads/${req.file.filename}`;
     } else if (req.body.imageUrl) {
@@ -335,7 +333,6 @@ app.post('/api/rentals', authenticateToken, async (req, res) => {
       return res.status(400).json({ message: 'Voiture non disponible' });
     }
 
-    // Vérifie les chevauchements de dates
     const overlapping = await prisma.rental.findFirst({
       where: {
         carId: Number(carId),
@@ -444,8 +441,6 @@ app.put('/api/rentals/:id', async (req, res) => {
       where: { id: Number(id) },
       data: { status }
     });
-
-    // Incrémente le compteur si la location est confirmée
     if (status === 'CONFIRMED') {
       await prisma.car.update({
         where: { id: rental.carId },
@@ -505,20 +500,18 @@ app.delete('/api/rentals/:id', authenticateToken, async (req, res) => {
 });
 
 
-// Liste toutes les images du dossier uploads
 app.get('/api/uploads', authenticateToken, (req, res) => {
   const uploadsDir = path.join(process.cwd(), 'uploads');
   fs.readdir(uploadsDir, (err, files) => {
     if (err) {
       return res.status(500).json({ message: "Erreur lors de la lecture du dossier uploads" });
     }
-    // On ne retourne que les fichiers (pas les dossiers)
     const images = files.filter(f => !fs.statSync(path.join(uploadsDir, f)).isDirectory());
     res.json(images);
   });
 });
 
-// Supprime une image du dossier uploads
+
 app.delete('/api/uploads/:filename', authenticateToken, (req, res) => {
   const { filename } = req.params;
   const filePath = path.join(process.cwd(), 'uploads', filename);
