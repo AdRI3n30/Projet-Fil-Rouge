@@ -48,7 +48,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      // Ne pas écraser le user si déjà présent
       if (!user) {
         const savedUser = localStorage.getItem('user');
         if (savedUser) {

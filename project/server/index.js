@@ -155,10 +155,8 @@ app.delete('/api/users/:id', authenticateToken, async (req, res) => {
     }
     const { id } = req.params;
 
-    // Supprime d'abord les locations liées à l'utilisateur
     await prisma.rental.deleteMany({ where: { userId: Number(id) } });
 
-    // Puis supprime l'utilisateur
     await prisma.user.delete({ where: { id: Number(id) } });
 
     res.status(204).end();
@@ -191,8 +189,7 @@ app.post('/api/login', async (req, res) => {
       expiresIn: '1d'
     });
 
-    // 🔹 Afficher le token dans la console
-    console.log(`✅ Nouveau token généré : ${token}`);
+    console.log(`Nouveau token généré : ${token}`);
     res.status(200).json({
       message: 'Connexion réussie',
       token,
@@ -204,13 +201,12 @@ app.post('/api/login', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('❌ Erreur lors de la connexion :', error.message);
+    console.error('Erreur lors de la connexion :', error.message);
     res.status(500).json({ message: 'Erreur lors de la connexion', error: error.message });
   }
 });
 
 
-// Routes pour les voitures
 app.get('/api/cars', async (req, res) => {
   try {
     const cars = await prisma.car.findMany({
@@ -298,10 +294,7 @@ app.put('/api/cars/:id', authenticateToken, upload.single('image'), async (req, 
 
 app.delete('/api/cars/:id', authenticateToken, async (req, res) => {
   try {
-
     const { id } = req.params;
-
-    // Vérifie si la voiture existe
     const car = await prisma.car.findUnique({
       where: { id: Number(id) }
     });
@@ -309,12 +302,9 @@ app.delete('/api/cars/:id', authenticateToken, async (req, res) => {
     if (!car) {
       return res.status(404).json({ message: 'Voiture non trouvée' });
     }
-
-    // Suppression de la voiture
     await prisma.car.delete({
       where: { id: Number(id) }
     });
-
     res.status(200).json({ message: 'Voiture supprimée avec succès' });
   } catch (error) {
     res.status(500).json({ message: 'Erreur lors de la suppression de la voiture', error: error.message });
@@ -322,8 +312,6 @@ app.delete('/api/cars/:id', authenticateToken, async (req, res) => {
 });
 
 
-
-// Routes pour les locations
 app.post('/api/rentals', authenticateToken, async (req, res) => {
   try {
     const { carId, startDate, endDate, totalPrice } = req.body;

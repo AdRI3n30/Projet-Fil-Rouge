@@ -22,16 +22,14 @@ const BillingPage: React.FC = () => {
     setBillingInfo({ ...billingInfo, [e.target.name]: e.target.value });
   };
 
-  // Simule un paiement
   const handlePayment = () => {
-    // Vérifie que tous les champs sont remplis
     if (!billingInfo.address || !billingInfo.city || !billingInfo.postalCode || !billingInfo.country) {
       setFormError('Merci de remplir tous les champs de facturation.');
       return;
     }
     setFormError(null);
     alert('Paiement effectué avec succès !');
-    navigate('/'); // Redirige vers l'accueil ou une page de confirmation
+    navigate('/'); 
   };
 
   return (

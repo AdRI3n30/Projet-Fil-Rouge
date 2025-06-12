@@ -17,8 +17,6 @@ const EditCarPage: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Ajout pour images déjà uploadées
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [selectedExistingImage, setSelectedExistingImage] = useState<string>('');
 
@@ -37,7 +35,6 @@ const EditCarPage: React.FC = () => {
     fetchCar();
   }, [id]);
 
-  // Récupérer les images déjà uploadées
   useEffect(() => {
     const fetchImages = async () => {
       try {
@@ -46,7 +43,6 @@ const EditCarPage: React.FC = () => {
         });
         setExistingImages(res.data.map((img: string) => `/uploads/${img}`));
       } catch (err) {
-        // Optionnel : gérer l'erreur
       }
     };
     fetchImages();
@@ -58,13 +54,13 @@ const EditCarPage: React.FC = () => {
 
   const handleExistingImageSelect = (imgUrl: string) => {
     setSelectedExistingImage(imgUrl);
-    setFile(null); // Désélectionner le fichier uploadé si on choisit une image existante
+    setFile(null);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0]);
-      setSelectedExistingImage(''); // Désélectionner l'image existante si on choisit un fichier
+      setSelectedExistingImage(''); 
     }
   };
 

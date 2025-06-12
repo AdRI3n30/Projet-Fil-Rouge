@@ -46,7 +46,6 @@ const CarsPage: React.FC = () => {
   useEffect(() => {
     let result = cars;
 
-    // Filter by search term
     if (searchTerm) {
       result = result.filter(car => 
         car.brand.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -54,15 +53,12 @@ const CarsPage: React.FC = () => {
       );
     }
 
-    // Filter by price
     result = result.filter(car => car.price <= priceRange);
 
-    // Filter by brand
     if (selectedBrand) {
       result = result.filter(car => car.brand === selectedBrand);
     }
 
-    // Tri
     if (sortBy === 'price') {
       result = [...result].sort((a, b) => sortOrder === 'asc' ? a.price - b.price : b.price - a.price);
     } else if (sortBy === 'year') {
@@ -72,7 +68,6 @@ const CarsPage: React.FC = () => {
     setFilteredCars(result);
   }, [searchTerm, priceRange, selectedBrand, cars, sortBy, sortOrder]);
 
-  // Get unique brands for filter
   const brands = [...new Set(cars.map(car => car.brand))];
 
   if (loading) {

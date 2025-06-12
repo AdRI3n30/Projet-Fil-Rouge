@@ -11,7 +11,7 @@ const locations = [
   { name: "Lille", coordinates: [3.0573, 50.6292] },
 ];
 
-// GeoJSON fiable pour la France (régions)
+
 const FRANCE_GEOJSON =
   "https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/regions-version-simplifiee.geojson";
 

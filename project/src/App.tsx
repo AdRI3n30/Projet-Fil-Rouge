@@ -19,7 +19,7 @@ import MesReservations from './pages/MesReservations';
 import CompanyMap from './pages/CompanyMap';
 import React from 'react';
 
-// Ajoute ce composant utilitaire
+
 function ScrollToTop() {
   const { pathname } = useLocation();
   React.useEffect(() => {
@@ -32,7 +32,7 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <ScrollToTop /> {/* Ajoute ceci ici */}
+        <ScrollToTop />
         <div className="flex flex-col min-h-screen">
           <Navbar />
           <main className="flex-grow pt-8">

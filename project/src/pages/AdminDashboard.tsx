@@ -71,7 +71,7 @@ const AdminDashboard: React.FC = () => {
           response = await axios.get('/api/uploads', {
             headers: { Authorization: `Bearer ${token}` }
           });
-          setImages(response.data); // response.data doit être un tableau de noms de fichiers
+          setImages(response.data); 
         }
       } catch (err) {
         setError(`Impossible de récupérer les données (${activeTab}).`);

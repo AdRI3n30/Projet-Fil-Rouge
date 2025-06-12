@@ -62,7 +62,6 @@ const CarDetailsPage: React.FC = () => {
     }
   }, [startDate, endDate, car]);
 
-  // Récupère les périodes réservées pour cette voiture
   useEffect(() => {
     const fetchReservedPeriods = async () => {
       try {
@@ -122,7 +121,6 @@ const CarDetailsPage: React.FC = () => {
         }
       );
 
-      // Redirige vers la page de facturation avec les infos de la commande et de la voiture
       navigate('/facturation', { state: { rental: response.data, car } });
 
     } catch (err: any) {

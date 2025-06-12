@@ -44,7 +44,6 @@ const VendeurPage: React.FC = () => {
     );
   };
 
-  // Valider, refuser ou finir une commande (PUT)
   const handleRentalAction = async (rentalId: number, action: 'CONFIRMED' | 'CANCELLED' | 'COMPLETED' | 'FINISHED') => {
     try {
       await axios.put(
@@ -52,7 +51,6 @@ const VendeurPage: React.FC = () => {
         { status: action },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      // Recharge la liste des locations pour refléter le changement
       const res = await axios.get('/api/rentals', {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -63,7 +61,6 @@ const VendeurPage: React.FC = () => {
     }
   };
 
-  // Supprimer une commande (DELETE)
   const handleDeleteRental = async (rentalId: number) => {
     const confirmation = window.confirm('Êtes-vous sûr de vouloir supprimer cette commande ?');
     if (!confirmation) return;
@@ -95,7 +92,7 @@ const VendeurPage: React.FC = () => {
       await axios.delete(`/api/cars/${carId}`);
       setCars(prevCars => prevCars.filter(car => car.id !== carId));
     } catch (err: any) {
-      console.error('❌ Erreur lors de la suppression :', err);
+      console.error('Erreur lors de la suppression :', err);
       alert(err.response?.data?.message || "Erreur lors de la suppression de la voiture.");
     }
   };
