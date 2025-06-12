@@ -21,6 +21,8 @@ const VendeurPage: React.FC = () => {
   const [rentals, setRentals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [sortKey, setSortKey] = useState<'brand' | 'model' | 'year' | 'price'>('brand');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   const fetchCars = async () => {
     try {
@@ -97,6 +99,18 @@ const VendeurPage: React.FC = () => {
     }
   };
 
+  const sortedCars = [...cars].sort((a, b) => {
+    let valA = a[sortKey];
+    let valB = b[sortKey];
+    if (typeof valA === 'string') {
+      valA = valA.toLowerCase();
+      valB = (valB as string).toLowerCase();
+    }
+    if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
+    if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
+    return 0;
+  });
+
   return (
     <div className="max-w-6xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
       {/* Section Mes Voitures */}
@@ -121,34 +135,56 @@ const VendeurPage: React.FC = () => {
             <p className="text-gray-600">Aucune voiture trouvée. Cliquez sur "Ajouter une voiture" pour commencer.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {cars.map((car) => (
-              <div key={car.id} className="bg-white rounded-lg shadow p-4 flex flex-col relative">
-                {isCarRented(car.id) && (
-                  <span className="absolute top-2 right-2 bg-yellow-400 text-white text-xs px-2 py-1 rounded">
-                    En commande
-                  </span>
-                )}
-                <img src={car.imageUrl.startsWith('/uploads/')? `${car.imageUrl}`: car.imageUrl} alt={`${car.brand} ${car.model}`}  className="h-40 w-full object-cover rounded mb-4" />
-                <h2 className="text-lg font-semibold text-gray-800">{car.brand} {car.model} ({car.year})</h2>
-                <p className="text-blue-600 font-bold">{car.price}€ / jour</p>
-                <div className="mt-auto flex justify-end space-x-2 pt-4">
-                  <button
-                    onClick={() => navigate(`/edit-car/${car.id}`)}
-                    className="text-blue-600 hover:text-blue-800"
-                  >
-                    <Pencil className="h-5 w-5" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(car.id)}
-                    className="text-red-600 hover:text-red-800"
-                  >
-                    <Trash2 className="h-5 w-5" />
-                  </button>
+          <>
+            <div className="flex items-center mb-4 gap-4">
+              <label className="font-medium">Trier par :</label>
+              <select
+                value={sortKey}
+                onChange={e => setSortKey(e.target.value as any)}
+                className="border rounded px-2 py-1"
+              >
+                <option value="brand">Marque</option>
+                <option value="model">Modèle</option>
+                <option value="year">Année</option>
+                <option value="price">Prix</option>
+              </select>
+              <button
+                onClick={() => setSortOrder(order => order === 'asc' ? 'desc' : 'asc')}
+                className="border rounded px-2 py-1"
+                title={sortOrder === 'asc' ? 'Ordre croissant' : 'Ordre décroissant'}
+              >
+                {sortOrder === 'asc' ? '⬆️' : '⬇️'}
+              </button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {sortedCars.map((car) => (
+                <div key={car.id} className="bg-white rounded-lg shadow p-4 flex flex-col relative">
+                  {isCarRented(car.id) && (
+                    <span className="absolute top-2 right-2 bg-yellow-400 text-white text-xs px-2 py-1 rounded">
+                      En commande
+                    </span>
+                  )}
+                  <img src={car.imageUrl.startsWith('/uploads/')? `${car.imageUrl}`: car.imageUrl} alt={`${car.brand} ${car.model}`}  className="h-40 w-full object-cover rounded mb-4" />
+                  <h2 className="text-lg font-semibold text-gray-800">{car.brand} {car.model} ({car.year})</h2>
+                  <p className="text-blue-600 font-bold">{car.price}€ / jour</p>
+                  <div className="mt-auto flex justify-end space-x-2 pt-4">
+                    <button
+                      onClick={() => navigate(`/edit-car/${car.id}`)}
+                      className="text-blue-600 hover:text-blue-800"
+                    >
+                      <Pencil className="h-5 w-5" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(car.id)}
+                      className="text-red-600 hover:text-red-800"
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
 

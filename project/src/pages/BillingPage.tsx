@@ -87,8 +87,13 @@ const BillingPage: React.FC = () => {
           Payer maintenant
         </button>
       </form>
-    </div>
+      <p className="text-sm text-gray-600 text-center mt-4">
+        <b>Important :</b> Le jour de la récupération du véhicule, il vous sera demandé de présenter une pièce d'identité valide.  
+      </p>    
+    </div>    
   );
-};
 
+
+};
 export default BillingPage;
+

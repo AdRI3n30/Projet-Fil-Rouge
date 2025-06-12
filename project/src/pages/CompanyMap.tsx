@@ -17,7 +17,7 @@ const FRANCE_GEOJSON =
 
 const CompanyMap: React.FC = () => (
   <div className="flex flex-col items-center py-8">
-    <h2 className="text-2xl font-bold mb-4">Nos implantations en France</h2>
+    <h2 className="text-2xl font-bold mb-4 pt-4">Nos implantations en France</h2>
     <div className="w-full max-w-md">
       <ComposableMap
         projection="geoMercator"

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
-import { Calendar, DollarSign, Check, X, Loader, Car as CarIcon } from 'lucide-react';
+import { Calendar, Check, X, Loader, Car as CarIcon } from 'lucide-react';
 
 interface Car {
   id: number;
@@ -179,7 +179,6 @@ const CarDetailsPage: React.FC = () => {
             </div>
             
             <div className="mt-6 flex items-center text-blue-600 font-bold text-2xl">
-              <DollarSign className="h-6 w-6" />
               <span>{car.price}€ / jour</span>
             </div>
             

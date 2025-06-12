@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -18,6 +18,7 @@ import BillingPage from './pages/BillingPage';
 import MesReservations from './pages/MesReservations';
 import CompanyMap from './pages/CompanyMap';
 import React from 'react';
+import VendeurRoute from './components/VendeurRoute'; 
 
 
 function ScrollToTop() {
@@ -45,24 +46,25 @@ function App() {
               <Route 
                 path="/edit-car/:id" 
                 element={
-                  <ProtectedRoute>
+                  <VendeurRoute>
                     <EditCarPage />
-                  </ProtectedRoute>
-                } />
+                  </VendeurRoute>
+                } 
+              />
               <Route 
                 path="/vendeur" 
                 element={
-                  <ProtectedRoute>
+                  <VendeurRoute>
                     <VendeurPage />
-                  </ProtectedRoute>
+                  </VendeurRoute>
                 }
               />
               <Route 
                 path="/ajouter-voiture" 
                 element={
-                  <ProtectedRoute>
+                  <VendeurRoute>
                     <AddCarPage />
-                  </ProtectedRoute>
+                  </VendeurRoute>
                 }
               />
               <Route 
@@ -84,6 +86,7 @@ function App() {
               <Route path="/facturation" element={<BillingPage />} />
               <Route path="/mes-reservations" element={<MesReservations />} />
               <Route path="/implantations" element={<CompanyMap />} />
+              <Route path="*" element={<Navigate to="/" replace />} /> {/* Redirection pour les routes inconnues */}
             </Routes>
           </main>
           <Footer />

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, DollarSign } from 'lucide-react';
+import { Calendar} from 'lucide-react';
 
 interface CarCardProps {
   car: {
@@ -37,7 +37,6 @@ const CarCard: React.FC<CarCardProps> = ({ car }) => {
         </div>
         <div className="mt-4 flex justify-between items-center">
           <div className="flex items-center text-blue-600 font-bold">
-            <DollarSign className="h-5 w-5" />
             <span>{car.price}€ / jour</span>
           </div>
           <Link 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 import { Loader, AlertCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface Car {
   id: number;
@@ -39,6 +40,7 @@ interface User {
 
 const AdminDashboard: React.FC = () => {
   const { token } = useAuth();
+  const navigate = useNavigate(); // Ajout du hook
   const [activeTab, setActiveTab] = useState<'cars' | 'rentals' | 'users' | 'images'>('cars');
   const [cars, setCars] = useState<Car[]>([]);
   const [rentals, setRentals] = useState<Rental[]>([]);
@@ -196,12 +198,20 @@ const AdminDashboard: React.FC = () => {
                     <p className="text-sm text-gray-600">Prix : {car.price} €</p>
                     <p className="text-sm text-gray-600 mb-2">Disponible : {car.available ? 'Oui' : 'Non'}</p>
                     <p className="text-sm text-gray-800">{car.description}</p>
-                    <button
-                      onClick={() => handleDeleteCar(car.id)}
-                      className="mt-3 bg-red-500 hover:bg-red-600 text-white px-3 py-1 text-sm rounded"
-                    >
-                      Supprimer
-                    </button>
+                    <div className="flex gap-2 mt-3">
+                      <button
+                        onClick={() => navigate(`/edit-car/${car.id}`)}
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 text-sm rounded"
+                      >
+                        Modifier
+                      </button>
+                      <button
+                        onClick={() => handleDeleteCar(car.id)}
+                        className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 text-sm rounded"
+                      >
+                        Supprimer
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
