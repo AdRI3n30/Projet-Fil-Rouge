@@ -32,7 +32,10 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem('user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,14 +48,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      // Charger les informations de l'utilisateur à partir du token
-      const userData = JSON.parse(atob(token.split('.')[1]));
-      setUser({
-        id: userData.id,
-        email: userData.email,
-        name: userData.name,
-        role: userData.role
-      });
+      // Ne pas écraser le user si déjà présent
+      if (!user) {
+        const savedUser = localStorage.getItem('user');
+        if (savedUser) {
+          setUser(JSON.parse(savedUser));
+        }
+      }
     } else {
       delete axios.defaults.headers.common['Authorization'];
       setUser(null);
@@ -72,6 +74,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('token', token);
       setToken(token);
       setUser(user);
+      localStorage.setItem('user', JSON.stringify(user));
     } catch (err: any) {
       setError(err.response?.data?.message || 'Une erreur est survenue lors de la connexion');
       throw err;
@@ -94,6 +97,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('token', token);
       setToken(token);
       setUser(user);
+      localStorage.setItem('user', JSON.stringify(user));
     } catch (err: any) {
       setError(err.response?.data?.message || 'Une erreur est survenue lors de l\'inscription');
       throw err;
@@ -104,6 +108,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setToken(null);
     setUser(null);
     delete axios.defaults.headers.common['Authorization'];
